@@ -1,0 +1,23 @@
+[project]
+name = "alsafa-erp-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "BLE"]
+ignore = ["B008", "E501"]  # B008: FastAPI Depends() idiom; E501: long comments/docstrings are fine (ruff format owns code wrapping)
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["BLE"]
+"alembic/env.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+markers = ["integration: needs a real PostgreSQL (set TEST_DATABASE_URL)"]

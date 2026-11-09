@@ -1,0 +1,2 @@
+# Local end-to-end harness only (not an app dependency)
+playwright>=1.45  # uses the system Chrome; no browser download needed (see run_e2e.py)

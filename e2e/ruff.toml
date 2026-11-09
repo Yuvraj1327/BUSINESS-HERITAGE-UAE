@@ -1,0 +1,5 @@
+# Local test harness, not application code: same rules as the backend, minus "blind except" (scenarios must report any failure).
+extend = "../backend/pyproject.toml"
+
+[lint.per-file-ignores]
+"*.py" = ["BLE001", "SIM115"]
