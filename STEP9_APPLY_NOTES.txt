@@ -1,0 +1,7 @@
+Step 9 — Employees, Salaries, Leave, Visas & Passports, Trade Licenses
+1. Extract over the Step 8 tree (paths are relative to the project root). No files need deleting.
+2. Apply database/migrations/0013_employee_compliance.sql after 0012 (additive; adds employee/licence columns and the immutable license_renewals table).
+3. Backend: no new dependencies. Frontend: no new dependencies.
+4. Read docs/hr/STEP9_EMPLOYEES_COMPLIANCE.md section 8 (unresolved decisions) before relying on payroll, leave or licence figures. Visa cancellation is permanent with no undo in the app (D25).
+Existing files changed: core/calculations.py, repositories/report_repository.py, services/dashboard_service.py, schemas/dashboard.py, api/v1/router.py, dashboard.ts schema, notification menu, navigation, routes, OwnerDashboard, tests/layout.test.tsx, e2e/run_e2e.py, database/tests/test_database.py, and four docs.
+Supabase Auth was simulated in all tests; a real Supabase project was never available.

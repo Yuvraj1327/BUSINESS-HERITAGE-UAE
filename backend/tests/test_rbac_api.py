@@ -5,6 +5,7 @@ Numbers in test names refer to the 16 security test cases of the Step 5 brief.""
 import json
 import uuid
 from collections.abc import Iterator
+from datetime import date, timedelta
 from typing import Annotated
 
 import psycopg
@@ -141,10 +142,12 @@ class Users:
         return uid
 
     def report(self, branch: str) -> uuid.UUID:
+        # A distinct date per report: (branch, date) is unique for active reports, so random dates collided.
+        self._day = getattr(self, "_day", 0) + 1
         rid = self.admin.execute(
             """insert into public.daily_reports (report_date, branch_id, total_sales, order_count, cash_received)
                values (%s, %s, 100, 1, 100) returning id""",
-            (f"2026-10-{uuid.uuid4().int % 28 + 1:02d}", self.branches[branch]),
+            (date(2026, 1, 1) + timedelta(days=self._day), self.branches[branch]),
         ).fetchone()[0]
         return rid
 
@@ -539,7 +542,14 @@ def test_profile_includes_permission_slice(client, key, owner, main_user) -> Non
     o = client.get("/api/v1/auth/profile", headers=hdr(key, owner)).json()["permissions"]
     b = client.get("/api/v1/auth/profile", headers=hdr(key, main_user)).json()["permissions"]
     assert set(o) >= {"user_management", "suppliers", "employees", "settings"}
-    assert set(b) == {"dashboard", "branch_management", "daily_reports"}
+    assert set(b) == {
+        "dashboard",
+        "branch_management",
+        "daily_reports",
+        "orders",
+        "customers",
+        "order_payments",
+    }
     assert b["daily_reports"] == {"actions": ["create", "read"], "scope": "own_branch"}
 
 

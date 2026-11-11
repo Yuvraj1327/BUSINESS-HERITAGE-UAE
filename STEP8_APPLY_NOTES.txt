@@ -1,0 +1,6 @@
+Step 8 — Finance Management (Opening Balances, Cash & Banks, Expenses & Savings, Suppliers)
+1. Extract over the Step 7 tree (paths are relative to the project root). No files need deleting.
+2. Apply database/migrations/0012_finance_ledgers.sql after 0011 (additive; changes how POS Pending counts, see docs/finance/STEP8_FINANCE.md).
+3. Backend: no new dependencies. Frontend: no new dependencies.
+4. Read docs/finance/STEP8_FINANCE.md section 10 (unresolved decisions) before using balances for real.
+Supabase Auth was simulated in all tests; a real Supabase project was never available.

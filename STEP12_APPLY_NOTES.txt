@@ -1,0 +1,7 @@
+STEP 12 - Reports, Analytics, Exports, Activity History, integration review, deployment docs, handover
+Unzip over the project root (new and changed files only).
+1. Backend: pip install -r backend/requirements.txt   (adds openpyxl; dev: types-openpyxl)
+2. Database: apply database/migrations/0016_report_indexes.sql after 0015 (idempotent, indexes only).
+3. Frontend: no new dependencies (recharts was already listed). Reports pages are lazy-loaded.
+4. Verify: backend pytest (needs a PostgreSQL test server), frontend `npx vitest run`, `python e2e/run_e2e.py`.
+Nothing has been deployed. See docs/HANDOVER.md and docs/deployment/DEPLOYMENT_GUIDE.md.

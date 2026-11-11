@@ -52,6 +52,10 @@ class Module(StrEnum):
     USER_MANAGEMENT = "user_management"
     SETTINGS = "settings"
     AUDIT_LOG = "audit_log"
+    ALERTS = "alerts"
+    ORDERS = "orders"
+    CUSTOMERS = "customers"
+    ORDER_PAYMENTS = "order_payments"
 
 
 class Scope(StrEnum):
@@ -83,7 +87,7 @@ PERMISSION_MATRIX: dict[Role, dict[Module, Grant]] = {
         Module.DASHBOARD:         _g(ALL, A.READ, A.EXPORT),
         Module.BRANCH_MANAGEMENT: _g(ALL, A.READ, A.UPDATE, A.MANAGE),            # name / order / active only (D16)
         Module.DAILY_REPORTS:     _g(ALL, A.READ, A.CREATE, A.UPDATE, A.EXPORT),  # UPDATE = audited void (D4)
-        Module.CASH_BANKS:        _g(ALL, A.READ, A.EXPORT),
+        Module.CASH_BANKS:        _g(ALL, A.READ, A.CREATE, A.UPDATE, A.EXPORT),  # CREATE = transfer/POS settlement; UPDATE = audited void
         Module.OPENING_BALANCES:  _g(ALL, A.READ, A.CREATE, A.UPDATE, A.EXPORT),
         Module.EXPENSES:          _g(ALL, A.READ, A.CREATE, A.UPDATE, A.EXPORT),
         Module.SUPPLIERS:         _g(ALL, A.READ, A.CREATE, A.UPDATE, A.EXPORT),
@@ -96,16 +100,24 @@ PERMISSION_MATRIX: dict[Role, dict[Module, Grant]] = {
         Module.USER_MANAGEMENT:   _g(ALL, A.READ, A.CREATE, A.UPDATE, A.MANAGE),  # no DELETE: deactivate instead
         Module.SETTINGS:          _g(ALL, A.READ, A.UPDATE, A.MANAGE),
         Module.AUDIT_LOG:         _g(ALL, A.READ),
+        Module.ALERTS:            _g(ALL, A.READ, A.UPDATE),                      # UPDATE = mark read / acknowledge (Step 11)
+        Module.ORDERS:            _g(ALL, A.READ, A.CREATE, A.UPDATE, A.MANAGE, A.EXPORT),  # MANAGE = cancel an order (Step 13)
+        Module.CUSTOMERS:         _g(ALL, A.READ, A.CREATE, A.UPDATE),
+        Module.ORDER_PAYMENTS:    _g(ALL, A.READ, A.CREATE, A.MANAGE),            # MANAGE = refund (no workflow approved yet)
     },
     Role.BRANCH_USER: {
         Module.DASHBOARD:         _g(OWN, A.READ),
         Module.BRANCH_MANAGEMENT: _g(OWN, A.READ),            # may see their own branch record; no management
         Module.DAILY_REPORTS:     _g(OWN, A.READ, A.CREATE),  # never UPDATE / DELETE / EXPORT
+        # Step 13 (customer orders): own branch only. No cancel / refund (MANAGE). Assumption O1, awaiting Owner approval.
+        Module.ORDERS:            _g(OWN, A.READ, A.CREATE, A.UPDATE, A.EXPORT),
+        Module.CUSTOMERS:         _g(OWN, A.READ, A.CREATE, A.UPDATE),
+        Module.ORDER_PAYMENTS:    _g(OWN, A.READ, A.CREATE),
         # Everything below is deliberately absent => DENY (see docs/security/PERMISSION_MATRIX.md for open items):
         #   CASH_BANKS, OPENING_BALANCES, EXPENSES (own-branch shop expenses are entered inside the daily report,
         #   covered by DAILY_REPORTS/CREATE), SUPPLIERS, EMPLOYEES, VISAS_PASSPORTS, TRADE_LICENSES,
         #   RENTALS_CHEQUES, TASKS (D11), REPORTS (own history = DAILY_REPORTS/READ), USER_MANAGEMENT,
-        #   SETTINGS, AUDIT_LOG
+        #   SETTINGS, AUDIT_LOG, ALERTS (matrix: Alerts = Owner only)
     },
 }
 # fmt: on

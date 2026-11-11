@@ -1,0 +1,7 @@
+Step 11 — Task Management, Notifications & Alerts
+1. Extract over the Step 10 tree (paths are relative to the project root). No files need deleting.
+2. Apply database/migrations/0015_tasks_alerts.sql after 0014 (additive: task description/notes/completion fields with a Done-iff-completed rule, active-assignee check, and the new Owner-only public.alerts table). Existing task rows marked Done get completed_at = updated_at.
+3. Backend: no new dependencies. Frontend: no new dependencies.
+4. Alerts are calculated on demand (every alerts read synchronises them). NO scheduler is configured or tested; nothing is sent by WhatsApp, SMS or email. Read docs/tasks/STEP11_TASKS_ALERTS.md sections 6 and 10 (decisions T1-T10, including the still-open D11: Branch Users have no task access).
+Existing files changed: core/permissions.py, schemas/hr.py, services/compliance_service.py, repositories/report_repository.py, services/dashboard_service.py, api/v1/router.py, database/tests/test_database.py, backend test_permission_matrix.py, frontend permissions.ts, navigation.ts, routes/index.tsx, notification-menu.tsx, OwnerDashboard.tsx, tests (layout, hr, rentals, render-app), e2e/run_e2e.py, and docs (MIGRATION_GUIDE, API_SPECIFICATION, OPEN_DECISIONS, ROLE_PERMISSION_MATRIX, PERMISSION_MATRIX).
+Verified: backend 495 passed + 1 skipped, database 157, frontend 244, end-to-end 92/92 (Supabase Auth simulated; a real Supabase project was never available).

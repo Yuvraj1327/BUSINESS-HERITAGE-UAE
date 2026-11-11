@@ -1,0 +1,7 @@
+ALSAFA Step 13 - Customer Orders, Pickup & Delivery (files changed or added since the Step 12 zip)
+1. Unzip over the project (paths are relative to the project root).
+2. Database: apply database/migrations/0017_customer_orders.sql ONCE, after 0016 (adds tables only).
+3. Backend: no new dependencies. Frontend: no new dependencies.
+4. Tests: backend `pytest -q` (560), database tests (162), frontend `npx vitest run` (285), `python e2e/run_e2e.py` (122, simulated Auth).
+5. Read docs/orders/STEP13_CUSTOMER_ORDERS.md section 12 (decisions O1-O14 awaiting client approval).
+Nothing is deployed; Supabase Auth was simulated in browser tests.

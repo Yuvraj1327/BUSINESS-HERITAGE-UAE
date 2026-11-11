@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { PageHeader } from '@/components/layout/page-header'
 import { cn } from '@/lib/utils'
 
 interface PageContainerProps {
@@ -9,7 +10,7 @@ interface PageContainerProps {
   className?: string
 }
 
-/** Standard page frame: title row + responsive content width. Reused by every module page later. */
+/** Standard page frame: responsive width and padding, a PageHeader, then the page's sections. */
 export function PageContainer({
   title,
   description,
@@ -18,14 +19,13 @@ export function PageContainer({
   className,
 }: PageContainerProps) {
   return (
-    <section className={cn('mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6', className)}>
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold text-primary sm:text-2xl">{title}</h1>
-          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-        </div>
-        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
-      </header>
+    <section
+      className={cn(
+        'mx-auto w-full max-w-7xl min-w-0 space-y-6 px-4 py-5 sm:px-6 sm:py-6 lg:px-8',
+        className,
+      )}
+    >
+      <PageHeader title={title} description={description} actions={actions} />
       {children}
     </section>
   )

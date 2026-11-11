@@ -39,9 +39,7 @@ describe('session restoration and route protection', () => {
     expect(screen.getByText('Restoring your session…')).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Sign in' })).not.toBeInTheDocument()
     release()
-    expect(
-      await screen.findByText('Test Owner', { selector: '[data-slot="card-title"], h3, div' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Sign in' })).not.toBeInTheDocument()
   })
 
@@ -49,7 +47,7 @@ describe('session restoration and route protection', () => {
     sb.state.session = makeSession()
     const calls = stubApi(() => ({ status: 200, body: PROFILE_OWNER }))
     renderApp('/')
-    expect(await screen.findByText('Welcome')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
     const call = calls.find((c) => c.url === '/auth/profile')
     expect(call?.headers.get('Authorization')).toBe('Bearer access-token-for-tests')
   })
@@ -57,7 +55,7 @@ describe('session restoration and route protection', () => {
   it('sends a signed-in user away from the login page', async () => {
     sb.state.session = makeSession()
     const { router } = renderApp('/login')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     expect(router.state.location.pathname).toBe('/')
   })
 
@@ -97,7 +95,7 @@ describe('login', () => {
     await user.type(await screen.findByLabelText('Email'), 'person@example.test')
     await user.type(screen.getByLabelText('Password'), 'Secret12345')
     await user.click(screen.getByRole('button', { name: 'Sign in' }))
-    expect(await screen.findByText('Welcome')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
     expect(sb.auth.signInWithPassword).toHaveBeenCalledWith({
       email: 'person@example.test',
       password: 'Secret12345',
@@ -185,7 +183,7 @@ describe('login', () => {
     await user.type(screen.getByLabelText('Password'), 'pw')
     await user.click(screen.getByLabelText('Keep me signed in on this device'))
     await user.click(screen.getByRole('button', { name: 'Sign in' }))
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     expect(localStorage.getItem('alsafa-auth-remember')).toBe('0')
   })
 })
@@ -194,7 +192,7 @@ describe('logout and expired sessions', () => {
   it('signs out locally, clears cached data and returns to login', async () => {
     sb.state.session = makeSession()
     const { queryClient, router } = renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     queryClient.setQueryData(['secret'], 1)
     await type().click(screen.getByRole('button', { name: /sign out/i }))
     await screen.findByRole('heading', { name: 'Sign in' })
@@ -211,7 +209,7 @@ describe('logout and expired sessions', () => {
       n++ === 0 ? { status: 200, body: PROFILE_OWNER } : apiError(401, 'token_expired'),
     )
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     await apiClient.get('/anything').catch(() => undefined)
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
     expect(screen.getByText(/session has ended/i)).toBeInTheDocument()
@@ -220,7 +218,7 @@ describe('logout and expired sessions', () => {
   it('a refresh failure (SIGNED_OUT from Supabase) shows the session-ended notice', async () => {
     sb.state.session = makeSession()
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     sb.emit('SIGNED_OUT', null)
     expect(await screen.findByText(/session has ended/i)).toBeInTheDocument()
   })
@@ -229,10 +227,10 @@ describe('logout and expired sessions', () => {
     sb.state.session = makeSession()
     const calls = stubApi(() => ({ status: 200, body: PROFILE_OWNER }))
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     sb.emit('TOKEN_REFRESHED', { ...makeSession(), access_token: 'new-token' })
     await waitFor(() => expect(calls.filter((c) => c.url === '/auth/profile')).toHaveLength(2))
-    expect(screen.getByText('Welcome')).toBeInTheDocument() // no loading screen in between
+    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument() // no loading screen in between
     expect(screen.queryByText('Loading your account…')).not.toBeInTheDocument()
   })
 })
@@ -247,7 +245,7 @@ describe('profile gating', () => {
   it('blocks a user without a profile', async () => {
     await denied('profile_missing', 403)
     expect(await screen.findByText('Account not set up')).toBeInTheDocument()
-    expect(screen.queryByText('Welcome')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Dashboard' })).not.toBeInTheDocument()
   })
 
   it('blocks an inactive user', async () => {
@@ -260,7 +258,7 @@ describe('profile gating', () => {
     expect(await screen.findByText('Could not load your account')).toBeInTheDocument()
     stubApi(() => ({ status: 200, body: PROFILE_OWNER }))
     await type().click(screen.getByRole('button', { name: 'Try again' }))
-    expect(await screen.findByText('Welcome')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
   })
 
   it('lets a blocked user sign out', async () => {
@@ -374,7 +372,7 @@ describe('reset password', () => {
   it('does not let a recovery session into the app', async () => {
     sb.state.session = makeSession()
     const { router } = renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     sb.emit('PASSWORD_RECOVERY', sb.state.session)
     await waitFor(() => expect(router.state.location.pathname).toBe('/reset-password'))
   })

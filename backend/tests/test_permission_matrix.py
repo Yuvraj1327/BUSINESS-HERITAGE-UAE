@@ -33,6 +33,7 @@ OWNER_ONLY = [
     Module.TRADE_LICENSES,
     Module.RENTALS_CHEQUES,
     Module.TASKS,
+    Module.ALERTS,
     Module.REPORTS,
     Module.USER_MANAGEMENT,
     Module.SETTINGS,
@@ -62,6 +63,16 @@ def test_branch_user_allowed_set_is_exactly_this() -> None:
         (Module.BRANCH_MANAGEMENT, Action.READ),
         (Module.DAILY_REPORTS, Action.READ),
         (Module.DAILY_REPORTS, Action.CREATE),
+        # Step 13 (customer orders), own branch; no cancel / refund / delete. Assumption O1 awaits Owner approval.
+        (Module.ORDERS, Action.READ),
+        (Module.ORDERS, Action.CREATE),
+        (Module.ORDERS, Action.UPDATE),
+        (Module.ORDERS, Action.EXPORT),
+        (Module.CUSTOMERS, Action.READ),
+        (Module.CUSTOMERS, Action.CREATE),
+        (Module.CUSTOMERS, Action.UPDATE),
+        (Module.ORDER_PAYMENTS, Action.READ),
+        (Module.ORDER_PAYMENTS, Action.CREATE),
     }
     assert all(g.scope is Scope.OWN_BRANCH for g in PERMISSION_MATRIX[Role.BRANCH_USER].values())
 

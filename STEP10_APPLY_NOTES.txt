@@ -1,0 +1,7 @@
+Step 10 — Rental Agreements & PDC Cheque Management
+1. Extract over the Step 9 tree (paths are relative to the project root). No files need deleting.
+2. Apply database/migrations/0014_rentals_pdc.sql after 0013 (additive; adds rental/cheque columns, final cleared/bounced cheque triggers, unique cheque number per bank, and replaces public.app_cash_bank_ledger with the 0012 definition plus the richer cleared-cheque row). It back-fills cleared_on for already-cleared cheques; nothing else in existing data changes.
+3. Backend: no new dependencies. Frontend: no new dependencies.
+4. Read docs/rentals/STEP10_RENTALS_PDC.md section 10 (decisions R1-R11) before relying on cheque amounts, dates, numbering or the "cleared and bounced cheques are final" rule.
+Existing files changed: api/v1/router.py, repositories/report_repository.py, services/dashboard_service.py, database/tests/test_database.py, frontend navigation.ts, routes/index.tsx, notification-menu.tsx, tests layout.test.tsx and hr.test.tsx, e2e/run_e2e.py, and four docs (MIGRATION_GUIDE, API_SPECIFICATION, OPEN_DECISIONS, ROLE_PERMISSION_MATRIX).
+Supabase Auth was simulated in all tests; a real Supabase project was never available.

@@ -51,23 +51,34 @@ describe('permission helpers (default deny)', () => {
 })
 
 describe('navigation and route protection', () => {
-  it('owner sees the administrative modules that exist', async () => {
+  it('owner sees the administrative modules', async () => {
     stubApi(() => ({ status: 200, body: PROFILE_OWNER }))
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     expect(within(nav()).getByRole('link', { name: 'Dashboard' })).toBeInTheDocument()
+    await userEvent.setup().click(within(nav()).getByRole('button', { name: 'Settings' }))
     expect(within(nav()).getByRole('link', { name: 'System status' })).toBeInTheDocument()
   })
 
-  it('branch user sees only permitted modules (modules not built yet stay hidden for everyone)', async () => {
+  it('branch user sees only the modules the server granted', async () => {
     stubApi(() => ({ status: 200, body: PROFILE_BRANCH }))
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     const links = within(nav())
       .getAllByRole('link')
       .map((a) => a.textContent)
-    expect(links).toEqual(['Dashboard'])
-    expect(screen.getByText('SATWA')).toBeInTheDocument()
+    expect(links).toEqual([
+      'Dashboard',
+      'My Branch',
+      'Branch & Date View',
+      'Daily Reports',
+      'Order Management',
+      'Orders',
+      'Customers',
+      'Pickup & Delivery',
+      'Order Reports',
+    ])
+    expect(screen.getAllByText('SATWA').length).toBeGreaterThan(0)
   })
 
   it('direct URL to an owner-only page shows Access denied to a branch user', async () => {
@@ -106,8 +117,15 @@ describe('navigation and route protection', () => {
 
   it('unknown URLs are 404, not Access denied', async () => {
     stubApi(() => ({ status: 200, body: PROFILE_BRANCH }))
+    renderApp('/no-such-page')
+    expect((await screen.findAllByText('Page not found')).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Access denied')).not.toBeInTheDocument()
+  })
+
+  it('an existing but forbidden module URL shows Access denied', async () => {
+    stubApi(() => ({ status: 200, body: PROFILE_BRANCH }))
     renderApp('/users')
-    expect(await screen.findByText('Page not found')).toBeInTheDocument()
+    expect(await screen.findByText('Access denied')).toBeInTheDocument()
   })
 })
 
@@ -154,25 +172,25 @@ describe('changes while signed in', () => {
     let profile: object = PROFILE_OWNER
     stubApi(() => ({ status: 200, body: profile }))
     renderApp('/')
-    await screen.findByText('Welcome')
-    expect(within(nav()).getByRole('link', { name: 'System status' })).toBeInTheDocument()
+    await screen.findByRole('heading', { name: 'Dashboard' })
+    expect(within(nav()).getByRole('button', { name: 'Settings' })).toBeInTheDocument()
     profile = PROFILE_BRANCH
     sb.emit('TOKEN_REFRESHED', makeSession())
     await waitFor(() =>
-      expect(within(nav()).queryByRole('link', { name: 'System status' })).not.toBeInTheDocument(),
+      expect(within(nav()).queryByRole('button', { name: 'Settings' })).not.toBeInTheDocument(),
     )
-    expect(screen.getByText('Welcome')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
   })
 
   it('deactivation discovered on refresh sends the user to the inactive page', async () => {
     let reply: ApiReply = { status: 200, body: PROFILE_BRANCH }
     stubApi(() => reply)
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     reply = apiError(403, 'account_inactive')
     sb.emit('TOKEN_REFRESHED', makeSession())
     expect(await screen.findByText('Account inactive')).toBeInTheDocument()
-    expect(screen.queryByText('Welcome')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Dashboard' })).not.toBeInTheDocument()
   })
 
   it('a 403 from the API (permission_denied) notifies the user and re-reads permissions', async () => {
@@ -186,7 +204,7 @@ describe('changes while signed in', () => {
       return apiError(403, 'permission_denied')
     })
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     await apiClient.get('/users').catch(() => undefined)
     await waitFor(() => expect(profileCalls).toBe(2))
     expect(toast.error).toHaveBeenCalled()
@@ -199,7 +217,7 @@ describe('changes while signed in', () => {
       n++ === 0 ? { status: 200, body: PROFILE_BRANCH } : apiError(401, 'token_expired'),
     )
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     await apiClient.get('/anything').catch(() => undefined)
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
   })
@@ -217,7 +235,7 @@ describe('user interaction sanity', () => {
   it('branch user can sign out from the app shell', async () => {
     stubApi(() => ({ status: 200, body: PROFILE_BRANCH }))
     renderApp('/')
-    await screen.findByText('Welcome')
+    await screen.findByRole('heading', { name: 'Dashboard' })
     await userEvent.setup().click(screen.getByRole('button', { name: /sign out/i }))
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
   })

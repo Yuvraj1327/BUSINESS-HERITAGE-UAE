@@ -1,72 +1,103 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Inbox } from 'lucide-react'
+import { Inbox, Layers } from 'lucide-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
+import { DataTable, type DataTableColumn } from '@/components/common/data-table'
 import { EmptyState } from '@/components/common/empty-state'
 import { ErrorState } from '@/components/common/error-state'
-import { FormField } from '@/components/common/form-field'
-import { LoadingIndicator } from '@/components/common/loading-indicator'
+import { LoadingState } from '@/components/common/loading-state'
+import { PermissionDenied } from '@/components/common/permission-denied'
+import { SectionCard } from '@/components/common/section-card'
+import { StatCard } from '@/components/common/stat-card'
+import { StatusBadge } from '@/components/common/status-badge'
+import { FormActions } from '@/components/forms/form-actions'
+import { FormDatePicker } from '@/components/forms/form-date-picker'
+import { FormInput } from '@/components/forms/form-input'
+import { FormSelect } from '@/components/forms/form-select'
+import { FormTextarea } from '@/components/forms/form-textarea'
 import { PageContainer } from '@/components/layout/page-container'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { BANKS } from '@/constants'
 import { aedAmountSchema } from '@/schemas/common'
-import { formatAED } from '@/utils/format'
+import { dubaiToday, formatAED } from '@/utils/format'
 
 const sampleSchema = z.object({
   title: z.string().min(2, 'At least 2 characters'),
   amount: aedAmountSchema,
+  bank: z.string().min(1, 'Choose a bank'),
+  date: z.string().min(1, 'Choose a date'),
+  note: z.string().optional(),
 })
 type SampleForm = z.infer<typeof sampleSchema>
 
-/** Development-only preview of the reusable foundations (route is not registered in production builds). */
+interface SampleRow {
+  id: string
+  label: string
+  amount: number
+  state: 'success' | 'danger'
+}
+const SAMPLE_ROWS: SampleRow[] = [
+  { id: 'a', label: 'Row A', amount: 1000, state: 'success' },
+  { id: 'b', label: 'Row B', amount: 300, state: 'danger' },
+]
+const COLUMNS: DataTableColumn<SampleRow>[] = [
+  { key: 'label', header: 'Label', cell: (r) => r.label },
+  { key: 'amount', header: 'Amount', align: 'right', cell: (r) => formatAED(r.amount) },
+  {
+    key: 'state',
+    header: 'Status',
+    cell: (r) => (
+      <StatusBadge status={r.state}>{r.state === 'success' ? 'Matches' : 'Difference'}</StatusBadge>
+    ),
+  },
+]
+
+const SWATCHES = [
+  ['Primary navy', 'bg-primary'],
+  ['Primary blue', 'bg-accent'],
+  ['Accent teal', 'bg-teal'],
+  ['Background', 'bg-background border'],
+  ['Surface', 'bg-card border'],
+  ['Border', 'bg-border'],
+  ['Text primary', 'bg-foreground'],
+  ['Text secondary', 'bg-muted-foreground'],
+] as const
+
+/** Development-only preview of the shared UI (route is not registered in production builds). */
 export function DesignSystemPage() {
-  const [bank, setBank] = useState<string>(BANKS[0])
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<SampleForm>({
     resolver: zodResolver(sampleSchema),
-    defaultValues: { title: '', amount: '' },
+    defaultValues: { title: '', amount: '', bank: '', date: '', note: '' },
   })
 
   return (
-    <PageContainer title="Design system" description="Reusable foundations (development only).">
-      <Card>
-        <CardHeader>
-          <CardTitle>Buttons and badges</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-center gap-2">
+    <PageContainer
+      title="Design system"
+      description="Shared components and tokens (development only). Sample values are illustrative, not business data."
+    >
+      <SectionCard title="Colour tokens">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {SWATCHES.map(([name, cls]) => (
+            <li key={name} className="flex items-center gap-2 text-sm">
+              <span className={`size-8 shrink-0 rounded-md ${cls}`} aria-hidden />
+              {name}
+            </li>
+          ))}
+        </ul>
+      </SectionCard>
+
+      <SectionCard title="Buttons, badges and status">
+        <div className="flex flex-wrap items-center gap-2">
           <Button>Primary</Button>
           <Button variant="accent">Accent</Button>
           <Button variant="secondary">Secondary</Button>
@@ -74,120 +105,123 @@ export function DesignSystemPage() {
           <Button variant="ghost">Ghost</Button>
           <Button variant="destructive">Destructive</Button>
           <Badge>Default</Badge>
-          <Badge variant="success">Matches</Badge>
-          <Badge variant="warning">Expiring</Badge>
-          <Badge variant="destructive">Diff</Badge>
-        </CardContent>
-      </Card>
+          <Badge variant="secondary">Secondary</Badge>
+          <StatusBadge status="success">Success</StatusBadge>
+          <StatusBadge status="warning">Warning</StatusBadge>
+          <StatusBadge status="danger">Danger</StatusBadge>
+          <StatusBadge status="info">Info</StatusBadge>
+          <StatusBadge status="neutral">Neutral</StatusBadge>
+        </div>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Form controls</CardTitle>
-          <CardDescription>React Hook Form + Zod, AED amount as a decimal string</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            className="grid max-w-md gap-4"
-            onSubmit={(e) =>
-              void handleSubmit((v) => toast.success(`Valid: ${formatAED(v.amount)}`))(e)
-            }
-          >
-            <FormField label="Title" required error={errors.title}>
-              <Input placeholder="Enter a title" {...register('title')} />
-            </FormField>
-            <FormField
-              label="Amount (AED)"
-              required
-              error={errors.amount}
-              description="Up to 2 decimals"
-            >
-              <Input inputMode="decimal" placeholder="0.00" {...register('amount')} />
-            </FormField>
-            <div className="grid gap-1.5">
-              <Label>Bank</Label>
-              <Select value={bank} onValueChange={setBank}>
-                <SelectTrigger aria-label="Bank">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {BANKS.map((b) => (
-                    <SelectItem key={b} value={b}>
-                      {b}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit">Validate</Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button type="button" variant="outline">
-                    Open dialog
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirm action</DialogTitle>
-                    <DialogDescription>
-                      Dialogs are used for forms and confirmations.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button variant="outline">Cancel</Button>
-                    <Button>Confirm</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Stat card" value="123" description="With a value" icon={Layers} />
+        <StatCard label="Placeholder" placeholder description="No data yet" />
+        <StatCard label="Loading" isLoading />
+        <StatCard label="Amount" value={formatAED(2500)} description="AED, tabular figures" />
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Table</CardTitle>
-          <CardDescription>
-            Sample layout only: illustrative values, not business data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Label</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Check</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell>Row A</TableCell>
-                <TableCell className="tabular text-right">{formatAED(1000)}</TableCell>
-                <TableCell>
-                  <Badge variant="success">Matches</Badge>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Row B</TableCell>
-                <TableCell className="tabular text-right">{formatAED(300)}</TableCell>
-                <TableCell>
-                  <Badge variant="destructive">Diff</Badge>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <LoadingIndicator fill label="Loading data…" />
-        <EmptyState
-          icon={Inbox}
-          title="No records yet"
-          description="Create the first record to get started."
+      <SectionCard
+        title="Data table"
+        description="Scrolls inside its own container on small screens"
+      >
+        <DataTable
+          columns={COLUMNS}
+          rows={SAMPLE_ROWS}
+          getRowId={(r) => r.id}
+          caption="Sample rows"
         />
-        <ErrorState message="Example error message." onRetry={() => toast.info('Retry clicked')} />
+      </SectionCard>
+
+      <SectionCard title="Form components">
+        <form
+          className="grid max-w-xl gap-4"
+          onSubmit={(e) =>
+            void handleSubmit((v) => toast.success(`Valid: ${formatAED(v.amount)}`))(e)
+          }
+        >
+          <FormInput
+            label="Title"
+            required
+            error={errors.title}
+            placeholder="Enter a title"
+            {...register('title')}
+          />
+          <FormInput
+            label="Amount (AED)"
+            required
+            error={errors.amount}
+            description="Up to 2 decimals"
+            inputMode="decimal"
+            placeholder="0.00"
+            {...register('amount')}
+          />
+          <Controller
+            control={control}
+            name="bank"
+            render={({ field }) => (
+              <FormSelect
+                label="Bank"
+                required
+                options={BANKS.map((b) => ({ value: b, label: b }))}
+                value={field.value}
+                onValueChange={field.onChange}
+                error={errors.bank}
+              />
+            )}
+          />
+          <FormDatePicker
+            label="Date"
+            required
+            max={dubaiToday()}
+            error={errors.date}
+            {...register('date')}
+          />
+          <FormTextarea label="Note" description="Optional" {...register('note')} />
+          <FormActions submitLabel="Validate" onCancel={() => toast.info('Cancel clicked')}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmOpen(true)}
+              className="h-11 sm:h-9"
+            >
+              Open confirm dialog
+            </Button>
+          </FormActions>
+        </form>
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title="Confirm action"
+          description="Confirmations are used before sensitive actions."
+          confirmLabel="Confirm"
+          onConfirm={() => {
+            toast.success('Confirmed')
+            setConfirmOpen(false)
+          }}
+        />
+      </SectionCard>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <SectionCard title="Loading">
+          <LoadingState />
+        </SectionCard>
+        <SectionCard title="Empty">
+          <EmptyState
+            icon={Inbox}
+            title="No records yet"
+            description="Create the first record to get started."
+          />
+        </SectionCard>
+        <SectionCard title="Error">
+          <ErrorState
+            message="Example error message."
+            onRetry={() => toast.info('Retry clicked')}
+          />
+        </SectionCard>
+        <SectionCard title="Permission denied">
+          <PermissionDenied />
+        </SectionCard>
       </div>
     </PageContainer>
   )

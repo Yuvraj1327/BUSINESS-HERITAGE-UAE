@@ -2,7 +2,7 @@
 
 Web-based ERP for ALSAFA Heritage Laundry: one Owner dashboard over 10 branches, plus branch-level daily reporting, cash and bank management, expenses and savings, suppliers, employees and compliance, trade licences, rental agreements with post-dated cheques, tasks, and reports. Currency AED; banks ENBD and ADCB.
 
-**Status:** Steps 1-5 complete (architecture, database layer, project foundation, Supabase authentication, RBAC & branch isolation). The main layout starts in Step 6; business modules follow. Planning documents: `docs/architecture/`; database: `docs/database/`, `database/`.
+**Status:** Steps 1-12 complete in code (architecture, database, foundation, authentication, RBAC, layout, dashboard & daily reports, finance, employees & compliance, rentals & PDC, tasks & alerts, reports/analytics/exports/activity history). Not deployed. Start with `docs/HANDOVER.md`. Planning documents: `docs/architecture/`; database: `docs/database/`, `database/`; deployment: `docs/deployment/`.
 
 ## Stack
 Frontend: React 19, TypeScript (strict), Vite, Tailwind CSS 4, shadcn/ui conventions (Radix), React Router, TanStack Query, Axios, React Hook Form, Zod, Recharts, Lucide, Sonner.
@@ -63,9 +63,9 @@ TEST_PG_ADMIN_DSN="host=localhost user=postgres dbname=postgres" python -m pytes
 ```
 frontend/   React app (src/: components, layouts, pages, routes, hooks, services, lib, schemas, config ...)
 backend/    FastAPI app (app/: api, core, database, models, schemas, repositories, services, middleware ...), alembic/, tests/
-database/   SQL migrations 0001-0010 and database tests (Steps 2, 5)
+database/   SQL migrations 0001-0017 and database tests
 e2e/        local end-to-end harness: simulated Supabase Auth server + Playwright (Step 4)
-docs/       architecture/ (Step 1), database/ (Step 2), authentication/ (Step 4), security/ (Step 5), PROJECT_SETUP.md, ENVIRONMENT_SETUP.md
+docs/       architecture/ (Step 1), database/ (Step 2), authentication/ (Step 4), security/ (Step 5), ui/ (Step 6), PROJECT_SETUP.md, ENVIRONMENT_SETUP.md
 ```
 More detail: `docs/PROJECT_SETUP.md`. Environment variables and security rules: `docs/ENVIRONMENT_SETUP.md`.
 

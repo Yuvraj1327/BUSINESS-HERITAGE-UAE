@@ -121,3 +121,9 @@ def register_exception_handlers(app: FastAPI) -> None:
         # Details go to the log (with the request id), never to the client.
         logger.exception("Unhandled error", exc_info=exc)
         return error_response(request, 500, "internal_error", "An unexpected error occurred")
+
+
+class UnprocessableError(AppError):
+    """A well-formed request that breaks a business rule (422), with per-field messages for the form."""
+
+    status_code, code = 422, "validation_error"

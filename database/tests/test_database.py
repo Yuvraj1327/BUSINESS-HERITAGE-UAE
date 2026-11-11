@@ -14,7 +14,8 @@ BRANCHES = ["ALSAFA MAIN", "JERNAS", "SATWA", "BURDUBAI", "NDL",
 CATEGORIES = {"Detergent & chemicals", "Utilities", "Rent", "Repairs", "Transport", "Packaging", "Salaries"}
 APP_TABLES = {"branches", "expense_categories", "profiles", "opening_balances", "opening_branch_cash",
               "daily_reports", "head_office_expenses", "suppliers", "employees", "tasks", "trade_licenses",
-              "rental_agreements", "pdc_cheques", "audit_log"}
+              "rental_agreements", "pdc_cheques", "audit_log",
+              "supplier_entries", "pos_settlements", "cash_transfers", "license_renewals", "alerts", "service_categories", "customers", "orders", "order_payments", "order_status_history"}
 
 
 def cheques(n, rent, bank="ENBD", first="2026-10-01", prefix="C"):
@@ -627,9 +628,17 @@ class Test16ChequeStatus:
         with as_user(conn, w.owner):
             conn.execute("update public.pdc_cheques set status='Cleared' where id=%s", [cid])
         assert one(conn, "select cleared_at is not null from public.pdc_cheques where id=%s", [cid])
+        # Step 10: a cleared cheque is final (history is never overwritten); a bounced one needs a replacement cheque
+        with pytest.raises(E.CheckViolation):
+            with as_user(conn, w.owner):
+                conn.execute("update public.pdc_cheques set status='Bounced' where id=%s", [cid])
         with as_user(conn, w.owner):
-            conn.execute("update public.pdc_cheques set status='Bounced' where id=%s", [cid])
-        assert one(conn, "select cleared_at is null from public.pdc_cheques where id=%s", [cid])
+            aid2 = one(conn, "select public.create_rental_agreement(%s,'L','U','2026-10-01','2027-09-30',1000,%s::jsonb)",
+                       [w.branch["ALSAFA MAIN"], json.dumps(cheques(1, 1000, prefix="D"))])
+        cid2 = one(conn, "select id from public.pdc_cheques where agreement_id=%s", [aid2])
+        with as_user(conn, w.owner):
+            conn.execute("update public.pdc_cheques set status='Bounced' where id=%s", [cid2])
+        assert one(conn, "select cleared_at is null and bounced_at is not null from public.pdc_cheques where id=%s", [cid2])
 
     def test_task_status_validation(self, conn):
         with pytest.raises(E.CheckViolation):
@@ -730,17 +739,17 @@ class Test18Balances:
         start, asof, cash, enbd, adcb, total, sav, pos = r
         assert str(start) == "2026-10-01" and str(asof) == "2026-10-02"
         assert cash == 2150     # 1500 opening + 1000 cash received - 290 shop expenses (incl savings) - 60 HO cash
-        assert enbd == 10500    # 10000 + 1000 bank receipts (ENBD receives) - 200 HO - 300 cleared cheque A
+        assert enbd == 9900     # 10000 + 400 bank transfers/links (ENBD receives; POS stays pending, 0012) - 200 HO - 300 cheque A
         assert adcb == 4800     # 5000 + 0 - 80 HO - 120 cleared cheque B  (cheque D is dated 20 Oct: not yet)
-        assert total == 17450
+        assert total == 16850   # cash + bank; unsettled POS is excluded
         assert sav == 450       # 300 b/f + 70 shop savings + 80 HO saving
-        assert pos == 700
+        assert pos == 1300      # 700 opening + 600 POS collections - 0 settlements
 
     def test_cheque_counts_on_its_date(self, conn, w):
         golden(conn, w)
         with as_user(conn, w.owner):
             r = q(conn, "select adcb_now, enbd_now from public.app_balances('2026-10-20')")[0]
-        assert r == (4800 - 77, 10500)
+        assert r == (4800 - 77, 9900)
 
     def test_before_tracking_start_returns_opening_position(self, conn, w):
         golden(conn, w)
@@ -753,7 +762,7 @@ class Test18Balances:
         conn.execute("update public.opening_balances set receipts_bank='ADCB'")
         with as_user(conn, w.owner):
             enbd, adcb = q(conn, "select enbd_now, adcb_now from public.app_balances('2026-10-02')")[0]
-        assert enbd == 10000 - 200 - 300 and adcb == 5000 + 1000 - 80 - 120
+        assert enbd == 10000 - 200 - 300 and adcb == 5000 + 400 - 80 - 120  # only bank transfers/links; POS pending
 
     def test_reconciliation_view(self, conn, w):
         golden(conn, w)

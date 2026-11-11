@@ -17,7 +17,8 @@ Actions: **R**ead, **C**reate, **U**pdate, **D**elete, **A**pprove, **E**xport, 
 | Visas & Passports | R, U, E · ALL | – | |
 | Trade Licenses | R, C, U, E · ALL | – | |
 | Rentals & Cheques | R, C, U, E · ALL | – | |
-| Tasks | R, C, U, D, E · ALL | – | only module with delete (schema allows it); branch access pending D11 |
+| Tasks | R, C, U, D, E · ALL | – | only module with delete (schema allows it); branch access pending D11 (Step 11 built no task delete; T5) |
+| Alerts (notifications, Step 11) | R, U · ALL | – | Owner reads and acknowledges; no branch grant |
 | Reports (analytics) | R, E · ALL | – | branch user's "own history" = Daily Reports/R |
 | User Management | R, C, U, M · ALL | – | no delete: accounts are deactivated, never removed |
 | Settings | R, U, M · ALL | – | |
@@ -47,3 +48,11 @@ The brief's table is implemented as written, with these interpretations (all def
 
 ## Changing the matrix
 Edit `permissions.py`, update this file and the tests in `backend/tests/test_permission_matrix.py` (which pins the exact Branch User grant set), run the database tests if a policy changes, and note it in the change log. There is no runtime UI for permission changes.
+
+
+## Step 12 note
+Reports & Analytics (`REPORTS`: read, export) and Activity History (`AUDIT_LOG`: read) are granted to the Owner only. Branch Users have no grant on either module, so every report, chart, export and activity route answers 403 (and writes an `ACCESS_DENIED` audit row); anonymous callers get 401. No report or export is generated in the browser.
+
+
+## Step 13 note
+New modules `orders`, `customers` and `order_payments`. Owner: orders read/create/update/export/manage(cancel); customers read/create/update; order payments read/create/manage(refund, disabled). Branch User (own branch only): orders read/create/update/export; customers read/create/update; order payments read/create. No role is allowed to delete orders, customers or payments. The Branch User grants are assumption **O1** awaiting client approval. See `docs/orders/STEP13_CUSTOMER_ORDERS.md` section 8.

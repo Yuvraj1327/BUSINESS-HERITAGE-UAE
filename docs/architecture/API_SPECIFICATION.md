@@ -105,3 +105,25 @@ Pagination and filters on lists; idempotency key header on money-posting creates
 ## 14. Optional (Step 13, not approved)
 
 /customers, /orders (search by id/phone/name), /orders/{id}/payments, /deliveries/today, /pickups/today, /orders/pipeline, /order-reports, /order-exports. Not part of core.
+
+
+## Step 8 additions
+Opening balances, Cash & Banks, Expenses and Suppliers endpoints (all Owner only) are documented in `docs/finance/STEP8_FINANCE.md` section 4. The live OpenAPI document at `/docs` (development) is authoritative.
+
+
+## Step 9 additions
+Employee, leave, visa/passport, trade licence and compliance alert endpoints (all Owner only) are documented in `docs/hr/STEP9_EMPLOYEES_COMPLIANCE.md` section 7.
+
+
+## Step 10 additions
+Rental agreement (`/rentals`) and PDC cheque (`/pdc-cheques`) endpoints (all Owner only) are documented in `docs/rentals/STEP10_RENTALS_PDC.md` section 7. The older rows for Rental agreements / PDC cheques above are superseded by that section (cheques are cleared, bounced, replaced and edited while Pending; there is no generic "change date" on a cleared or bounced cheque).
+
+Task (`/tasks`) and alert (`/alerts`) endpoints (all Owner only) are documented in `docs/tasks/STEP11_TASKS_ALERTS.md` section 7. They supersede the older Tasks rows above (status changes use `POST /tasks/{id}/status`; edits use `PUT /tasks/{id}`).
+
+
+## Step 12 additions
+Report (`/reports/catalog`, `/overview`, `/charts`, `/{key}`, `/{key}/export`) and activity-history (`/reports/activity`, `/activity/export`, `/activity/actors`) endpoints, all Owner only, are documented in `docs/reports/STEP12_REPORTS_ANALYTICS.md` section 5.
+
+
+## Step 13 additions
+Customer (`/customers`), order (`/orders`, including status, cancel, payments, dashboard and reports) and pickup/delivery (`/order-operations`) endpoints are documented in `docs/orders/STEP13_CUSTOMER_ORDERS.md` section 9. They are available to the Owner (all branches) and to Branch Users (own branch only), except cancel and refund, which are Owner only.

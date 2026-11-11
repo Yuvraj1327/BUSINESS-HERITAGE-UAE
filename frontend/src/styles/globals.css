@@ -4,30 +4,42 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ALSAFA design tokens: light theme by default, navy primary, white surfaces, light-grey canvas. */
+/* Colour tokens (see docs/ui/DESIGN_SYSTEM.md). Hex values are the brand palette; the two noted deviations
+   exist only to meet WCAG AA contrast. Light theme only: there is deliberately no dark mode. */
 :root {
   --radius: 0.5rem;
-  --background: #f4f6fa;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
+  --background: #f5f7fa; /* page canvas */
+  --foreground: #172b4d; /* text primary */
+  --card: #ffffff; /* surface */
+  --card-foreground: #172b4d;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0f2a5c;
+  --popover-foreground: #172b4d;
+  --primary: #173b63; /* navy */
   --primary-foreground: #ffffff;
-  --secondary: #e8eef9;
-  --secondary-foreground: #0f2a5c;
-  --muted: #eef1f6;
-  --muted-foreground: #5b6477;
-  --accent: #2563eb;
+  --secondary: #e7eef7;
+  --secondary-foreground: #173b63;
+  --muted: #eef2f7;
+  --muted-foreground: #5a6a80; /* text secondary; brand #64748b is 4.4:1 on the canvas, this is 5.1:1 */
+  --accent: #2563a8; /* professional blue */
   --accent-foreground: #ffffff;
-  --destructive: #dc2626;
+  --teal: #16a085; /* accent teal: icons, rules, large shapes. White text on it is only 3.3:1 */
+  --teal-strong: #0f7a64; /* teal for text and filled controls that carry text (5.3:1 on white) */
+  --destructive: #b91c1c;
   --success: #15803d;
   --warning: #b45309;
-  --border: #e2e8f0;
-  --input: #cbd5e1;
-  --ring: #2563eb;
-  --sidebar: #0f2a5c;
-  --sidebar-foreground: #e6ecf8;
+  --border: #e5eaf0;
+  --input: #8795a8; /* control borders: 3:1 against white (WCAG 1.4.11) */
+  --ring: #2563a8;
+  --sidebar: #173b63;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-muted: #b8c7db;
+  --sidebar-accent: #24507f; /* active / hover item */
+  --sidebar-border: #2c5280;
+  --elev-card: 0 1px 2px rgb(23 43 77 / 0.06), 0 1px 3px rgb(23 43 77 / 0.04);
+  --elev-pop: 0 8px 24px rgb(23 43 77 / 0.14);
+  --sidebar-width: 16rem;
+  --sidebar-rail-width: 4rem;
+  --header-height: 3.5rem;
 }
 
 @theme inline {
@@ -55,6 +67,13 @@
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-teal: var(--teal);
+  --color-teal-strong: var(--teal-strong);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+  --shadow-card: var(--elev-card);
+  --shadow-pop: var(--elev-pop);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -68,6 +87,7 @@
   }
   html {
     -webkit-text-size-adjust: 100%;
+    scroll-padding-top: var(--header-height);
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -75,6 +95,11 @@
     min-height: 100dvh;
   }
   /* Tabular figures keep AED columns aligned. */
+  /* One visible focus style for every keyboard-reachable control that does not define its own. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
   .tabular {
     font-variant-numeric: tabular-nums;
   }

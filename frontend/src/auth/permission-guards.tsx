@@ -12,12 +12,16 @@ import { ForbiddenPage } from '@/pages/auth/ForbiddenPage'
 export function RequirePermission({
   module,
   action = 'read',
+  scope,
 }: {
   module: AppModule
   action?: AppAction
+  /** Also require this grant scope (e.g. cross-branch pages need 'all_branches'). */
+  scope?: 'all_branches'
 }) {
-  const { ready, can } = usePermissions()
+  const { ready, can, scope: scopeOfModule } = usePermissions()
   if (!ready || !can(module, action)) return <ForbiddenPage />
+  if (scope && scopeOfModule(module) !== scope) return <ForbiddenPage />
   return <Outlet />
 }
 

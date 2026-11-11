@@ -81,3 +81,27 @@ Action for client/owner: supply the three missing items into `docs/reference/`.
 ## 6. Illustrative data warning
 
 All names, amounts, cheque numbers, landlords and balances in the Technical Summary come from a random generator. All figures in the second PDF (e.g. 284 orders, AED 29,840) are labelled "Illustrative sample data". None may be loaded as real data. Use only as test-fixture shapes.
+
+
+## 7. Step 8 finance decisions (status as of Step 8)
+Full list and rationale: `docs/finance/STEP8_FINANCE.md` section 10. Summary: D20 transfers implemented, pending Owner confirmation; single configured receiving bank (no per-report bank in the schema); no overdraft rule (negatives refused); POS Pending excluded from Cash + Bank until settled; expense edit = void + replacement.
+
+
+## 8. Step 9 employee and compliance decisions (status as of Step 9)
+Full list and rationale: `docs/hr/STEP9_EMPLOYEES_COMPLIANCE.md` section 8. Summary: D8 cancellation persisted on return after the limit (derived from dates before that); D9 leave history via audit log, renewals in `license_renewals`; D24 limit date is the last allowed day; D25 cancellation is permanent with no undo; D6 payroll excludes leave; D26 licence colour thresholds and fee-due window; D27 unique licence numbers; D28 renewal posts no expense; D29 renewal adds a year to the old expiry; D30 archive instead of delete; D31 alert definitions.
+
+
+## 9. Step 10 rental and PDC decisions (status as of Step 10)
+Full list and rationale: `docs/rentals/STEP10_RENTALS_PDC.md` section 10 (numbered R1-R11 so they do not collide with D24-D26). Summary: R1 whole-dirham rounding (half up) with the remainder on the last cheque; R2 0-based cheque index, month offsets from the first date; R3 cheque-number continuation; R4 cheque number unique per bank; R5 cleared and bounced cheques are final, bounced ones are replaced (this supersedes the earlier note that bounced dates are editable); R6 no-overdraft rule applies when clearing; R7-R8 agreement edit/renewal limits; R9 alert windows; R10 Terminated status unused; R11 old pending cheques stay pending after renewal. All await Owner confirmation.
+
+
+## 10. Step 11 task and alert decisions (status as of Step 11)
+Full list and rationale: `docs/tasks/STEP11_TASKS_ALERTS.md` section 10 (numbered T1-T10). Unresolved task-role permissions: **T1 (D11 / D22) Branch Users have no task access**; priority is not built (T2); any active user can be an assignee but gains no access (T3); supplier "dues requiring attention" has no approved rule (T4); no task delete (T5); no scheduler for alerts, so they are calculated on demand (T9). All await Owner confirmation.
+
+
+## 11. Step 12 reporting decisions (status as of Step 12)
+Full list: `docs/reports/STEP12_REPORTS_ANALYTICS.md` section 8 (numbered X1-X7). Needs an Owner decision: **X1 export downloads are logged to the application log, not recorded in `audit_log`** (the audit table is unchanged by design); X2 cash and bank KPIs are company-wide; X3 activity search covers record id and reason only; X4 limits of 366 days per request and 100,000 rows per export; X6 no saved/scheduled reports and no PDF. The optional customer order management system remains out of scope pending client confirmation.
+
+
+## 12. Step 13 customer order decisions (status as of Step 13)
+The earlier note that customer order management is "out of scope pending client confirmation" is superseded: it is now built, with the assumptions below. Full list: `docs/orders/STEP13_CUSTOMER_ORDERS.md` section 12 (numbered O1-O14). Needs an Owner decision first: **O1 Branch Users can read/create/update orders, customers and payments for their own branch** (assumed; the earlier matrix gave them only Daily Reports); **O2 only the Owner cancels**; **O4 no refund workflow** (the endpoint answers 409 and payments are never deleted); **O6 order revenue and collections are kept separate from Daily Reports sales and Cash & Banks** (nothing is posted to the ledger); O5 there is no driver/assignee, so "Unassigned or Incomplete" means a missing address or pickup time; O7 customer and branch cannot be changed on an order; O8 mobile number is required; O10 revenue is by order date excluding cancelled. All await client confirmation.

@@ -14,10 +14,14 @@ export const MODULES = [
   'trade_licenses',
   'rentals_cheques',
   'tasks',
+  'alerts',
   'reports',
   'user_management',
   'settings',
   'audit_log',
+  'orders',
+  'customers',
+  'order_payments',
 ] as const
 export type AppModule = (typeof MODULES)[number]
 

@@ -1,0 +1,4 @@
+Delete these Step 6 files when applying Step 7:
+frontend/src/pages/dashboard/OwnerDashboardPlaceholder.tsx
+frontend/src/pages/dashboard/BranchDashboardPlaceholder.tsx
+Apply database/migrations/0011_reporting_start_date.sql after 0010.
