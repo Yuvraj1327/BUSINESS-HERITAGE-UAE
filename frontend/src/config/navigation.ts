@@ -81,7 +81,7 @@ export const NAV_SECTIONS: NavSection[] = [
         to: '/branches',
         module: 'branch_management',
         action: 'read',
-        status: 'placeholder',
+        status: 'live',
       },
       {
         key: 'branch_date_view',
@@ -306,7 +306,7 @@ export const NAV_SECTIONS: NavSection[] = [
         to: '/users',
         module: 'user_management',
         action: 'read',
-        status: 'placeholder',
+        status: 'live',
       },
       {
         key: 'settings',
@@ -316,15 +316,6 @@ export const NAV_SECTIONS: NavSection[] = [
         action: 'read',
         status: 'live',
         children: [
-          {
-            key: 'settings_general',
-            label: 'General',
-            icon: ClipboardList,
-            to: '/settings',
-            module: 'settings',
-            action: 'read',
-            status: 'placeholder',
-          },
           {
             key: 'system_status',
             label: 'System status',
@@ -342,6 +333,7 @@ export const NAV_SECTIONS: NavSection[] = [
 
 /** Pages that exist but are not navigation entries (breadcrumb labels only). */
 export const EXTRA_PAGES: Record<string, { section: string; label: string }> = {
+  '/more': { section: 'Menu', label: 'More' },
   '/design-system': { section: 'Developer', label: 'Design system' },
 }
 

@@ -1,7 +1,7 @@
 """Application settings (environment variables, validated at startup).
 
 Only placeholders live in .env.example. Real secrets come from the process environment / a git-ignored
-.env file. No service-role key is read or needed here: privileged Supabase operations are added in Step 4+.
+.env file. The service-role key is optional and used only by account provisioning (POST /users).
 """
 
 from enum import StrEnum
@@ -44,6 +44,17 @@ class Settings(BaseSettings):
     jwks_max_stale_seconds: int = 3600
     jwt_leeway_seconds: int = 10
 
+    # Optional. Needed for Owner-driven account creation (POST /users) and the first-login password change
+    # (POST /auth/change-password): the API then calls the Supabase Auth Admin API. Never sent to the browser,
+    # never logged. Without it the API still runs and those endpoints answer 503 "not configured".
+    supabase_service_role_key: SecretStr | None = None
+    # Owner's account-provisioning decision: mark the email of Owner-created Branch Users as confirmed so they can
+    # sign in immediately. If false, Supabase requires them to confirm the email first (they cannot sign in until then).
+    provision_email_confirmed: bool = True
+    # Only used by the operator script (scripts/provision_account.py) and "Forgot password" emails; the Branch User
+    # creation flow sends no email.
+    password_reset_redirect_url: str | None = None
+
     # Comma-separated in the environment, e.g. "http://localhost:5173,https://erp.example.com"
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
 
@@ -52,6 +63,8 @@ class Settings(BaseSettings):
         "supabase_url",
         "supabase_jwt_issuer",
         "supabase_jwt_jwks_url",
+        "supabase_service_role_key",
+        "password_reset_redirect_url",
         mode="before",
     )
     @classmethod

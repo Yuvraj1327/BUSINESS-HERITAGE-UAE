@@ -3,6 +3,7 @@ import { SectionCard } from '@/components/common/section-card'
 import { FormInput } from '@/components/forms/form-input'
 import { FormSelect } from '@/components/forms/form-select'
 import { PageContainer } from '@/components/layout/page-container'
+import { Button } from '@/components/ui/button'
 import { useActors, useReport } from '@/hooks/use-analytics'
 import type { ReportFilters } from '@/services/analytics.service'
 import { dubaiToday } from '@/utils/format'
@@ -33,6 +34,13 @@ const ACTIONS = [
   ['DELETE', 'Deleted'],
 ] as const
 
+const SOURCES = [
+  ['all', 'All Activity'],
+  ['user', 'User Activity'],
+  ['system', 'System Activity'],
+] as const
+type SourceKey = (typeof SOURCES)[number][0]
+
 const PAGE_SIZE = 25
 
 /** Owner-only view over the existing audit trail (read only: nothing here can change an audit row). */
@@ -45,6 +53,7 @@ export function ActivityHistoryPage() {
   const [module, setModule] = useState('all')
   const [action, setAction] = useState('all')
   const [actor, setActor] = useState('all')
+  const [source, setSource] = useState<SourceKey>('all')
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
   const actors = useActors()
@@ -55,7 +64,8 @@ export function ActivityHistoryPage() {
     period: 'day',
     ...(module !== 'all' ? { module } : {}),
     ...(action !== 'all' ? { action } : {}),
-    ...(actor !== 'all' ? { actor_id: actor } : {}),
+    ...(source !== 'all' ? { source } : {}),
+    ...(actor !== 'all' && source !== 'system' ? { actor_id: actor } : {}),
     ...(q.trim() ? { q: q.trim() } : {}),
   }
   const report = useReport('activity', { ...filters, page, page_size: PAGE_SIZE })
@@ -72,7 +82,7 @@ export function ActivityHistoryPage() {
   return (
     <PageContainer
       title="Activity History"
-      description="Who changed what, and when. Passwords, tokens and keys are never shown. Owner only."
+      description="Who changed what, and when. System / Initial Setup entries are one-time setup events made with no signed-in user (the 10 branches and the first Owner profile). Passwords, tokens and keys are never shown. Owner only."
     >
       <ReportFilterBar
         value={filter}
@@ -81,9 +91,27 @@ export function ActivityHistoryPage() {
         showPeriod={false}
         showBranch={false}
       />
+      <div
+        className="inline-flex w-fit rounded-md border p-0.5"
+        role="group"
+        aria-label="Activity source"
+      >
+        {SOURCES.map(([value, label]) => (
+          <Button
+            key={value}
+            size="sm"
+            variant={source === value ? 'default' : 'ghost'}
+            aria-pressed={source === value}
+            onClick={() => reset(() => setSource(value))}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
       <div className="grid gap-3 rounded-xl border bg-card p-4 shadow-card sm:grid-cols-2 lg:grid-cols-4">
         <FormSelect
           label="User"
+          disabled={source === 'system'}
           value={actor}
           options={[
             { value: 'all', label: 'All users' },

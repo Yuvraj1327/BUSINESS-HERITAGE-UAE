@@ -8,3 +8,4 @@ alembic>=1.13,<2
 psycopg[binary]>=3.2,<4
 PyJWT[crypto]>=2.9,<3
 openpyxl>=3.1,<4   # Excel export (Step 12)
+httpx>=0.27,<1  # JWKS fetch in app/core/security.py

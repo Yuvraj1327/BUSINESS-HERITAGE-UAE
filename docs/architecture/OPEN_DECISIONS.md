@@ -99,6 +99,9 @@ Full list and rationale: `docs/rentals/STEP10_RENTALS_PDC.md` section 10 (number
 Full list and rationale: `docs/tasks/STEP11_TASKS_ALERTS.md` section 10 (numbered T1-T10). Unresolved task-role permissions: **T1 (D11 / D22) Branch Users have no task access**; priority is not built (T2); any active user can be an assignee but gains no access (T3); supplier "dues requiring attention" has no approved rule (T4); no task delete (T5); no scheduler for alerts, so they are calculated on demand (T9). All await Owner confirmation.
 
 
+## 10b. Branch User provisioning (status: implemented with these defaults)
+**D20 Initial-password creation and email confirmation.** The Owner now sets an initial password when creating a Branch User; no invitation email is used; the user must change it on first login. Default: the Auth email is marked **confirmed** so login works immediately (`PROVISION_EMAIL_CONFIRMED=true`). Owner to confirm, or choose `false` (user must confirm email before first sign-in).
+
 ## 11. Step 12 reporting decisions (status as of Step 12)
 Full list: `docs/reports/STEP12_REPORTS_ANALYTICS.md` section 8 (numbered X1-X7). Needs an Owner decision: **X1 export downloads are logged to the application log, not recorded in `audit_log`** (the audit table is unchanged by design); X2 cash and bank KPIs are company-wide; X3 activity search covers record id and reason only; X4 limits of 366 days per request and 100,000 rows per export; X6 no saved/scheduled reports and no PDF. The optional customer order management system remains out of scope pending client confirmation.
 

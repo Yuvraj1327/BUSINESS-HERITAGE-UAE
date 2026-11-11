@@ -49,3 +49,20 @@ export async function fetchProfile(): Promise<UserProfile> {
   const { data } = await apiClient.get<unknown>('/auth/profile')
   return profileSchema.parse(data)
 }
+
+/**
+ * First-login password change. The backend sets the password through the Supabase Admin API (so it can also
+ * clear the "must change" requirement); nothing is stored in the browser.
+ */
+export async function changeInitialPassword(newPassword: string, confirmPassword: string) {
+  await apiClient.post('/auth/change-password', {
+    new_password: newPassword,
+    confirm_password: confirmPassword,
+  })
+}
+
+/** Checks the current (initial) password again, so a left-open session cannot be used to change it. */
+export async function verifyCurrentPassword(email: string, password: string) {
+  const { error } = await client().auth.signInWithPassword({ email, password })
+  if (error) throw error
+}

@@ -27,9 +27,9 @@ Use `pip install -r requirements.lock` for the exact versions the project was ve
 
 ## Run
 ```bash
-# Terminal 1 - API on http://localhost:8000  (docs: /docs, health: /api/v1/health)
+# Terminal 1 - API on http://localhost:8008  (docs: /docs, health: /api/v1/health)
 cd backend && source .venv/bin/activate
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --host 0.0.0.0 --port 8008 --reload
 
 # Terminal 2 - web app on http://localhost:5173
 cd frontend && npm run dev
@@ -63,7 +63,7 @@ TEST_PG_ADMIN_DSN="host=localhost user=postgres dbname=postgres" python -m pytes
 ```
 frontend/   React app (src/: components, layouts, pages, routes, hooks, services, lib, schemas, config ...)
 backend/    FastAPI app (app/: api, core, database, models, schemas, repositories, services, middleware ...), alembic/, tests/
-database/   SQL migrations 0001-0017 and database tests
+database/   SQL migrations 0001-0018 and database tests
 e2e/        local end-to-end harness: simulated Supabase Auth server + Playwright (Step 4)
 docs/       architecture/ (Step 1), database/ (Step 2), authentication/ (Step 4), security/ (Step 5), ui/ (Step 6), PROJECT_SETUP.md, ENVIRONMENT_SETUP.md
 ```

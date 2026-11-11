@@ -137,7 +137,7 @@ export function AppSidebar({ rail }: { rail: boolean }) {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-30 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 motion-reduce:transition-none',
+        'fixed inset-y-0 left-0 z-30 border-r border-sidebar-border bg-gradient-to-b from-sidebar to-[#0f2d52] text-sidebar-foreground transition-[width] duration-200 motion-reduce:transition-none',
         rail ? 'w-[var(--sidebar-rail-width)]' : 'w-[var(--sidebar-width)]',
       )}
     >

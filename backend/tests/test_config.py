@@ -72,8 +72,11 @@ def test_production_rejects_wildcard_and_localhost_cors() -> None:
         s(**{**PROD, "cors_origins": "http://localhost:5173"})
 
 
-def test_service_role_key_is_not_a_setting() -> None:
-    assert not any("service_role" in name for name in Settings.model_fields)
+def test_service_role_key_is_optional_and_never_printed() -> None:
+    # Needed only for Owner-driven account creation (POST /users); the API must still run without it.
+    assert Settings(_env_file=None).supabase_service_role_key is None
+    cfg = Settings(_env_file=None, supabase_service_role_key="super-secret-value")
+    assert "super-secret-value" not in repr(cfg) and "super-secret-value" not in str(cfg)
 
 
 def test_blank_placeholders_mean_not_configured(monkeypatch: pytest.MonkeyPatch) -> None:

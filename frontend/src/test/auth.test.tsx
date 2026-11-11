@@ -349,8 +349,9 @@ describe('reset password', () => {
   })
 
   it.each([
-    ['onlyletterspassword', 'Include at least one number'],
-    ['1234567890123', 'Include at least one letter'],
+    ['Onlyletterspassword', 'Include at least one number'],
+    ['1234567890123', 'Include a lower case letter'],
+    ['onlyletters123', 'Include an upper case letter'],
   ])('rejects %s', async (pw, message) => {
     await openRecovery()
     const user = type()

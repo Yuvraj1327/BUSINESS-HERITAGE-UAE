@@ -18,6 +18,40 @@ Do this once per environment (dev project, production project) after `SUPABASE_S
 
 Rules: do this for exactly the people who should be Owners. Nothing in the app can promote a user later without an Owner (RLS: only an Owner may write `profiles`).
 
+## A2. Branch Users – from the app (normal path)
+Sign in as an Owner → **User Management → New Branch User** → full name, email, branch, password, confirm password → *Create user*.
+The API (`POST /api/v1/users`, Owner only) creates the Supabase Auth user through the **Supabase Admin API** with the
+password you chose, then inserts the profile (`role = 'branch'`, the chosen active branch, `must_change_password = true`).
+**No email is sent**: give the user their email and initial password through a secure channel; they can sign in at once.
+The role is never sent by the browser; Owners cannot be created this way. If the profile insert fails the Auth user is
+removed again, so no half-created account remains.
+
+Password rules (checked in the form and again by the API): 10-72 characters, upper and lower case letters, a number,
+no leading/trailing space, must not contain the email name; the confirmation must match. Passwords are never stored in
+`profiles`, logs, audit history or browser storage; they pass through the API to Supabase Auth only.
+
+**First login:** the Branch User signs in with the initial password and sees only a *Change your password* page (current
+password, new password, confirmation). Until they finish it the API answers every business request with
+`403 password_change_required`. `POST /api/v1/auth/change-password` sets the new password via the Admin API and clears
+`profiles.must_change_password` (migration `0018`). Forgot-password still works as before.
+
+**Email confirmation (Owner decision D20):** by default the Auth email is marked confirmed so the user can sign in
+immediately (`PROVISION_EMAIL_CONFIRMED=true`). Set it to `false` only if you want Supabase to require email
+confirmation first; the user then cannot sign in until they confirm.
+
+One-time server configuration (`backend/.env`, git-ignored; or the host's environment):
+```
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<Dashboard → Settings → API keys; server only>
+PROVISION_EMAIL_CONFIRMED=true    # default; see D20
+```
+(`PASSWORD_RESET_REDIRECT_URL` is only needed by the operator script below and is no longer used by this form.)
+Without the service-role key the form answers "Account creation is not configured on the server" (503); nothing is created.
+Also in Supabase → Authentication → Providers/Settings, switch **"Allow new users to sign up" OFF** so nobody can self-register.
+
+Error meanings: "Account not set up" at login = the Auth user has no profile (nobody provisioned a role/branch);
+the fix is to create the profile (A for an Owner, A2/B for others). Nobody is ever auto-promoted.
+
 ## B. Further accounts – with the provisioning script
 `backend/scripts/provision_account.py` (run from `backend/`, venv active) creates the Auth user **without a password**, inserts the profile, and emails a "set your password" link. If the profile insert fails the Auth user is deleted again (no orphans).
 

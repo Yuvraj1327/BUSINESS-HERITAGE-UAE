@@ -388,4 +388,23 @@ describe('Activity History page', () => {
     await user.click(screen.getByRole('button', { name: /Export CSV/ }))
     await waitFor(() => expect(calls.some((c) => c.url === '/reports/activity/export')).toBe(true))
   })
+
+  it('filters All / User / System activity via the source parameter', async () => {
+    const user = userEvent.setup()
+    const calls = api(PROFILE_OWNER)
+    renderApp('/activity-history')
+    await screen.findByRole('cell', { name: 'Status: To Do → Done' })
+    const last = () => calls.filter((c) => c.url === '/reports/activity').at(-1)!.params
+    expect(last()).not.toHaveProperty('source')
+    expect(screen.getByRole('button', { name: 'All Activity' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await user.click(screen.getByRole('button', { name: 'System Activity' }))
+    await waitFor(() => expect(last()).toMatchObject({ source: 'system', page: 1 }))
+    await user.click(screen.getByRole('button', { name: 'User Activity' }))
+    await waitFor(() => expect(last()).toMatchObject({ source: 'user' }))
+    await user.click(screen.getByRole('button', { name: 'All Activity' }))
+    await waitFor(() => expect(last()).not.toHaveProperty('source'))
+  })
 })

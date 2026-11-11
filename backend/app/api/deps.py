@@ -59,8 +59,10 @@ def get_auth_service(session: DbSession) -> AuthService:
 def get_current_profile(
     claims: CurrentClaims, service: Annotated[AuthService, Depends(get_auth_service)]
 ) -> Profile:
-    """Reusable dependency for protected routes: verified token + existing, ACTIVE profile (403 otherwise)."""
-    return service.require_active_profile(claims)
+    """Reusable dependency for protected routes: verified token + existing, ACTIVE profile (403 otherwise),
+    and no pending first-login password change (403 password_change_required). Only /auth/me, /auth/profile and
+    /auth/change-password skip that last check."""
+    return service.require_ready_profile(claims)
 
 
 CurrentProfile = Annotated[Profile, Depends(get_current_profile)]

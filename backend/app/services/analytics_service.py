@@ -75,6 +75,8 @@ class RF:
     module: str | None = None
     action: str | None = None
     actor_id: uuid.UUID | None = None
+    # Activity history only: 'user' = done by a signed-in ERP user, 'system' = no signed-in user (setup / operator).
+    source: str | None = None
     q: str | None = None
     page: int = 1
     page_size: int = 25
@@ -215,6 +217,23 @@ def change_summary(action: str, old: dict | None, new: dict | None) -> str:
         if not _blocked(k) and o.get(k) != n.get(k)
     ]
     return "; ".join(parts) or "No visible change"
+
+
+# Tables whose INSERTs with no signed-in user are the one-time bootstrap: the branch seed (migration 0009) and the
+# first Owner profile created by an operator in the SQL editor / provisioning script.
+BOOTSTRAP_TABLES = {"branches", "profiles"}
+SYSTEM_SETUP_LABEL = "System / Initial Setup"
+SYSTEM_OTHER_LABEL = "System (no signed-in user)"
+UNKNOWN_USER_LABEL = "Unknown user"
+
+
+def actor_label(actor_id: Any, actor_name: str | None, table: str, action: str) -> tuple[str, str]:
+    """(display name, source). The database records auth.uid(); a NULL actor means no signed-in ERP user."""
+    if actor_id is None:
+        if action == "INSERT" and table in BOOTSTRAP_TABLES:
+            return SYSTEM_SETUP_LABEL, "System"
+        return SYSTEM_OTHER_LABEL, "System"
+    return (actor_name or UNKNOWN_USER_LABEL), "User"
 
 
 def record_label(table: str, old: dict | None, new: dict | None) -> str:
@@ -1163,6 +1182,7 @@ class AnalyticsService(BaseService):
             tables,
             rf.action,
             rf.actor_id,
+            rf.source,
             rf.q,
             limit,
             (rf.page - 1) * rf.page_size,
@@ -1174,13 +1194,15 @@ class AnalyticsService(BaseService):
             mod = ACTIVITY_MODULES.get(r["table_name"], (r["table_name"], ""))[0]
             rows.append({
                 "occurred_at": r["occurred_at"].astimezone(BUSINESS_TZ).replace(tzinfo=None),
-                "user": r["actor_name"] or "System", "action": ACTION_LABELS.get(r["action"], str(r["action"]).replace("_", " ").capitalize()),
+                "user": actor_label(r["actor_user_id"], r["actor_name"], r["table_name"], r["action"])[0],
+                "source": actor_label(r["actor_user_id"], r["actor_name"], r["table_name"], r["action"])[1],
+                "action": ACTION_LABELS.get(r["action"], str(r["action"]).replace("_", " ").capitalize()),
                 "module": mod, "record": record_label(r["table_name"], r["old_values"], r["new_values"]) or str(r["record_id"] or "")[:8],
                 "summary": change_summary(r["action"], r["old_values"], r["new_values"]), "reason": r["reason"] or "",
             })  # fmt: skip
         return Table(
             "activity",
-            [C("occurred_at", "Date and time (Dubai)", "datetime"), C("user", "User"), C("action", "Action"),
+            [C("occurred_at", "Date and time (Dubai)", "datetime"), C("user", "User"), C("source", "Source"), C("action", "Action"),
              C("module", "Module"), C("record", "Related record"), C("summary", "Change summary"), C("reason", "Reason")],
             rows,
             [S("Matching entries", total, "int")],

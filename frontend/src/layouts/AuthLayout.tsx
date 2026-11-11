@@ -17,7 +17,7 @@ export function AuthLayout({
   return (
     <div className="flex min-h-dvh flex-col bg-sidebar px-4 py-8">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6">
-        <Brand light className="justify-center" />
+        <Brand light stacked className="justify-center" />
         <div className="rounded-xl border bg-card p-6 shadow-lg sm:p-8">
           <h1 className="text-xl font-semibold text-primary">{title}</h1>
           {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}

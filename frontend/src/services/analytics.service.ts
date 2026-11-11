@@ -19,6 +19,8 @@ export interface ReportFilters {
   module?: string
   action?: string
   actor_id?: string
+  /** Activity history: 'user' = signed-in users, 'system' = setup / operator events. Omit for all. */
+  source?: 'user' | 'system'
   q?: string
 }
 export interface ReportQuery extends ReportFilters {

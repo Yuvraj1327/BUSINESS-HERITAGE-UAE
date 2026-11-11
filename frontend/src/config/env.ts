@@ -14,7 +14,7 @@ const rawSchema = z.object({
   VITE_SUPABASE_ANON_KEY: z.string().optional(),
 })
 
-const DEV_DEFAULT_API = 'http://localhost:8000/api/v1'
+const DEV_DEFAULT_API = 'http://localhost:8008/api/v1'
 
 function jwtRole(token: string): string | null {
   const part = token.split('.')[1]

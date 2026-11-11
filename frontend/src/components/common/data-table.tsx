@@ -61,7 +61,7 @@ export function DataTable<T>({
     return <EmptyState title={emptyTitle} description={emptyDescription} icon={emptyIcon} />
   }
   return (
-    <div className={cn('overflow-hidden rounded-xl border bg-card', className)}>
+    <div className={cn('overflow-hidden rounded-xl border border-sky-100 bg-card', className)}>
       <Table aria-busy={isLoading || undefined}>
         <caption className="sr-only">{caption}</caption>
         <TableHeader>

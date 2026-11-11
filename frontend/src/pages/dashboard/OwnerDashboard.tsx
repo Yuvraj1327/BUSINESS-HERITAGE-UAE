@@ -1,11 +1,25 @@
-import { AlertTriangle, ChevronLeft, ChevronRight, Info } from 'lucide-react'
+import {
+  AlertTriangle,
+  Banknote,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Layers,
+  LineChart,
+  PiggyBank,
+  Package,
+  ShoppingBag,
+  Wallet,
+  Building2,
+} from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { DataTable } from '@/components/common/data-table'
 import { ErrorState } from '@/components/common/error-state'
 import { SectionCard } from '@/components/common/section-card'
 import { StatCard } from '@/components/common/stat-card'
 import { StatusBadge } from '@/components/common/status-badge'
-import { PageContainer } from '@/components/layout/page-container'
+import { PageHero } from '@/components/layout/page-hero'
+import { QuickActions } from '@/components/layout/quick-actions'
 import { MissingPanel } from '@/components/reporting/missing-panel'
 import { Button } from '@/components/ui/button'
 import { FormDatePicker } from '@/components/forms/form-date-picker'
@@ -34,7 +48,7 @@ function AlertsWidget() {
         <ErrorState error={summary.error} onRetry={() => void summary.refetch()} />
       ) : (
         <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Alert counts">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label="Alert counts">
             <StatCard
               label="Total Active Alerts"
               isLoading={summary.isLoading}
@@ -99,7 +113,7 @@ function BalanceCards({ b, loading }: { b?: OwnerDashboardData['balances']; load
     ['POS Pending', b?.pos_pending],
   ]
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
       {items.map(([label, v]) => (
         <StatCard
           key={label}
@@ -135,59 +149,88 @@ export function OwnerDashboard() {
   const period =
     mode === 'day' ? (
       <div className="flex flex-wrap items-end gap-2">
-        <Button variant="outline" onClick={() => set({ date: addDays(date, -1) })}>
+        <Button
+          variant="outline"
+          className="h-11 flex-1 sm:h-9 sm:flex-none"
+          onClick={() => set({ date: addDays(date, -1) })}
+        >
           <ChevronLeft aria-hidden /> Previous
         </Button>
         <FormDatePicker
           label="Date"
+          className="order-first w-full sm:order-none sm:w-auto"
           value={date}
           max={today}
           onChange={(e) => e.target.value && set({ date: e.target.value })}
         />
         <Button
           variant="outline"
+          className="h-11 flex-1 sm:h-9 sm:flex-none"
           disabled={date >= today}
           onClick={() => set({ date: addDays(date, 1) })}
         >
           Next <ChevronRight aria-hidden />
         </Button>
-        <Button variant="secondary" onClick={() => set({ date: today })}>
+        <Button
+          variant="secondary"
+          className="h-11 flex-1 sm:h-9 sm:flex-none"
+          onClick={() => set({ date: today })}
+        >
           Today
         </Button>
       </div>
     ) : (
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" onClick={() => set({ month: addMonths(month, -1) })}>
+      <div className="grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
+        <Button
+          variant="outline"
+          className="h-11 sm:h-9"
+          onClick={() => set({ month: addMonths(month, -1) })}
+        >
           <ChevronLeft aria-hidden /> Previous Month
         </Button>
-        <span className="min-w-36 text-center font-medium" aria-live="polite">
+        <span
+          className="order-first col-span-2 min-w-36 text-center font-medium sm:order-none sm:col-span-1"
+          aria-live="polite"
+        >
           {formatMonth(month)}
         </span>
         <Button
           variant="outline"
+          className="h-11 sm:h-9"
           disabled={month >= monthOf(today)}
           onClick={() => set({ month: addMonths(month, 1) })}
         >
           Next Month <ChevronRight aria-hidden />
         </Button>
-        <Button variant="secondary" onClick={() => set({ month: monthOf(today) })}>
+        <Button
+          variant="secondary"
+          className="col-span-2 h-11 sm:col-span-1 sm:h-9"
+          onClick={() => set({ month: monthOf(today) })}
+        >
           This Month
         </Button>
       </div>
     )
 
   return (
-    <PageContainer
-      title="Dashboard"
-      description="Overview of all branches, from submitted daily reports."
-    >
+    <section className="mx-auto w-full max-w-7xl min-w-0 space-y-6 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <PageHero
+        banner
+        title="Dashboard"
+        description="Overview of all branches, from submitted daily reports."
+      />
       <SectionCard title="Period">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="inline-flex rounded-md border p-0.5" role="group" aria-label="View">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          <div
+            className="flex rounded-lg border p-0.5 sm:inline-flex"
+            role="group"
+            aria-label="View"
+          >
             {(['day', 'month'] as const).map((m) => (
               <Button
                 key={m}
                 size="sm"
+                className="h-10 flex-1 sm:h-8 sm:flex-none"
                 variant={mode === m ? 'default' : 'ghost'}
                 aria-pressed={mode === m}
                 onClick={() => set({ view: m })}
@@ -207,55 +250,80 @@ export function OwnerDashboard() {
         <ErrorState error={q.error} onRetry={() => void q.refetch()} />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpis">
+          <div
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4"
+            data-testid="kpis"
+          >
             <StatCard
               label="Total Sales"
+              icon={ShoppingBag}
+              tone="blue"
               isLoading={loading}
               value={k && formatAED(k.total_sales)}
             />
             <StatCard
               label="Total Received"
+              icon={Layers}
+              tone="green"
               isLoading={loading}
               value={k && formatAED(k.total_received)}
               description={k ? `Not yet received ${formatAED(k.not_yet_received)}` : undefined}
             />
             <StatCard
               label="Shop Expenses (excl. savings)"
+              icon={Banknote}
+              tone="amber"
               isLoading={loading}
               value={k && formatAED(k.shop_expenses_excl_savings)}
             />
             <StatCard
               label="Head Office Expenses (excl. savings)"
+              icon={Building2}
+              tone="purple"
               isLoading={loading}
               value={k && formatAED(k.head_office_expenses_excl_savings)}
             />
             <StatCard
               label="Total Savings"
+              icon={PiggyBank}
               isLoading={loading}
               value={k && formatAED(k.total_savings)}
             />
             <StatCard
               label="Sales Minus Expenses"
+              icon={LineChart}
               isLoading={loading}
               value={k && formatAED(k.sales_minus_expenses)}
             />
-            <StatCard label="Total Orders" isLoading={loading} value={k?.total_orders} />
+            <StatCard
+              label="Total Orders"
+              icon={Package}
+              isLoading={loading}
+              value={k?.total_orders}
+            />
             <StatCard
               label="Cash + Bank Balance"
+              icon={Wallet}
               isLoading={loading}
               value={k?.cash_bank_balance ? formatAED(k.cash_bank_balance) : undefined}
               description={d && d.balances.status !== 'ok' ? 'Not configured' : undefined}
             />
           </div>
 
-          <SectionCard
-            title="Cash & bank summary"
-            description={
-              d?.balances.balance_date ? `As of ${formatDate(d.balances.balance_date)}` : undefined
-            }
-          >
-            <BalanceCards b={d?.balances} loading={loading} />
-          </SectionCard>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard
+              className="lg:col-span-1 xl:col-span-1"
+              title="Cash & Bank Summary"
+              description={
+                d?.balances.balance_date
+                  ? `As of ${formatDate(d.balances.balance_date)}`
+                  : undefined
+              }
+            >
+              <BalanceCards b={d?.balances} loading={loading} />
+            </SectionCard>
+            <QuickActions />
+          </div>
 
           <AlertsWidget />
 
@@ -307,7 +375,7 @@ export function OwnerDashboard() {
                 {(d?.branches ?? []).map((b) => (
                   <li
                     key={b.branch_id}
-                    className="grid grid-cols-[7rem_1fr_auto] items-center gap-3 text-sm"
+                    className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-2 text-xs sm:grid-cols-[7rem_1fr_auto] sm:gap-3 sm:text-sm"
                   >
                     <span className="truncate">{b.branch_name}</span>
                     <span className="h-3 overflow-hidden rounded bg-secondary" aria-hidden>
@@ -453,6 +521,6 @@ export function OwnerDashboard() {
           </SectionCard>
         </>
       )}
-    </PageContainer>
+    </section>
   )
 }

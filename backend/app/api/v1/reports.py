@@ -31,6 +31,7 @@ def _filters(
     module: str | None = None,
     action: Literal["INSERT", "UPDATE", "DELETE"] | None = None,
     actor_id: uuid.UUID | None = None,
+    source: Literal["user", "system"] | None = None,
     q: Annotated[str | None, Query(max_length=100)] = None,
     page: Annotated[int, Query(ge=1, le=100000)] = 1,
     page_size: Annotated[int, Query(ge=1, le=200)] = 25,
@@ -40,7 +41,7 @@ def _filters(
     return RF(
         d_from=date_from or end.replace(day=1),
         d_to=end, period=period, branch_id=branch_id, supplier_id=supplier_id, account=account, kind=kind,
-        module=module, action=action, actor_id=actor_id, q=q, page=page, page_size=page_size,
+        module=module, action=action, actor_id=actor_id, source=source, q=q, page=page, page_size=page_size,
     )  # fmt: skip
 
 

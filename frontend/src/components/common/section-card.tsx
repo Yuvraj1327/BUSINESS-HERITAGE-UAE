@@ -21,8 +21,8 @@ export function SectionCard({
   contentClassName,
 }: SectionCardProps) {
   return (
-    <section className={cn('min-w-0 rounded-xl border bg-card shadow-card', className)}>
-      <header className="flex flex-wrap items-start justify-between gap-2 border-b px-4 py-3 sm:px-5">
+    <section className={cn('min-w-0 rounded-2xl border bg-card shadow-card', className)}>
+      <header className="flex flex-wrap items-start justify-between gap-2 border-b border-sky-100 px-4 py-3.5 sm:px-5">
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-primary">{title}</h2>
           {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}

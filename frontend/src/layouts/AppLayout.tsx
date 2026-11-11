@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { AppHeader, NAV_TOGGLE_ID } from '@/components/layout/app-header'
 import { AppSidebar, SidebarContent } from '@/components/layout/app-sidebar'
+import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { APP_NAME } from '@/constants'
@@ -106,13 +107,18 @@ export function AppLayout({ headerExtra, children }: AppLayoutProps) {
         {headerExtra && mode === 'mobile' ? (
           <div className="border-b bg-card px-3 py-2">{headerExtra}</div>
         ) : null}
-        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 outline-none">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className={cn('min-w-0 flex-1 outline-none', mode === 'mobile' && 'pb-24')}
+        >
           {children ?? <Outlet />}
         </main>
         <footer className="border-t bg-card px-4 py-3 text-center text-xs text-muted-foreground">
           {APP_NAME} · Management System
         </footer>
       </div>
+      {mode === 'mobile' ? <MobileBottomNav /> : null}
     </TooltipProvider>
   )
 }

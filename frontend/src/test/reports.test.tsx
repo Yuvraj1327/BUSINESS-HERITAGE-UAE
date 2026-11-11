@@ -349,6 +349,44 @@ describe('Owner dashboard', () => {
     ).toBeInTheDocument()
   })
 
+  it('empty database: every KPI is zero, nothing is invented, and empty states are shown', async () => {
+    const Z = '0.00'
+    const empty = {
+      ...OWNER_DASHBOARD,
+      kpis: {
+        total_sales: Z,
+        total_received: Z,
+        not_yet_received: Z,
+        shop_expenses_excl_savings: Z,
+        head_office_expenses_excl_savings: Z,
+        total_savings: Z,
+        sales_minus_expenses: Z,
+        total_orders: 0,
+        cash_bank_balance: null,
+      },
+      branches: OWNER_DASHBOARD.branches.map((b) => ({
+        ...b,
+        report_count: 0,
+        total_sales: Z,
+        total_orders: 0,
+        total_received: Z,
+        not_yet_received: Z,
+        shop_expenses_excl_savings: Z,
+        shop_savings: Z,
+        head_office_excl_savings: Z,
+      })),
+    }
+    api(PROFILE_OWNER, (url) =>
+      url === '/dashboard/owner' ? { status: 200, body: empty } : undefined,
+    )
+    renderApp('/')
+    const kpis = await screen.findByTestId('kpis')
+    await within(kpis).findAllByText(/0\.00/)
+    // No non-zero money figure anywhere in the KPI grid.
+    expect(kpis.textContent).not.toMatch(/[1-9][\d,]*\.\d{2}/)
+    expect(screen.getByText('No sales recorded for this period.')).toBeInTheDocument()
+  })
+
   it('daily/monthly toggle and period navigation change the request', async () => {
     const calls = api(PROFILE_OWNER)
     renderApp('/')

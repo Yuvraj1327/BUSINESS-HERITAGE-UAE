@@ -8,7 +8,7 @@
    exist only to meet WCAG AA contrast. Light theme only: there is deliberately no dark mode. */
 :root {
   --radius: 0.5rem;
-  --background: #f5f7fa; /* page canvas */
+  --background: #f3f7fc; /* page canvas */
   --foreground: #172b4d; /* text primary */
   --card: #ffffff; /* surface */
   --card-foreground: #172b4d;
@@ -16,11 +16,11 @@
   --popover-foreground: #172b4d;
   --primary: #173b63; /* navy */
   --primary-foreground: #ffffff;
-  --secondary: #e7eef7;
+  --secondary: #e6effb;
   --secondary-foreground: #173b63;
   --muted: #eef2f7;
   --muted-foreground: #5a6a80; /* text secondary; brand #64748b is 4.4:1 on the canvas, this is 5.1:1 */
-  --accent: #2563a8; /* professional blue */
+  --accent: #1d5fc4; /* professional blue */
   --accent-foreground: #ffffff;
   --teal: #16a085; /* accent teal: icons, rules, large shapes. White text on it is only 3.3:1 */
   --teal-strong: #0f7a64; /* teal for text and filled controls that carry text (5.3:1 on white) */
@@ -29,11 +29,11 @@
   --warning: #b45309;
   --border: #e5eaf0;
   --input: #8795a8; /* control borders: 3:1 against white (WCAG 1.4.11) */
-  --ring: #2563a8;
+  --ring: #1d5fc4;
   --sidebar: #173b63;
   --sidebar-foreground: #e2e8f0;
   --sidebar-muted: #b8c7db;
-  --sidebar-accent: #24507f; /* active / hover item */
+  --sidebar-accent: #1d5fc4; /* active / hover item */
   --sidebar-border: #2c5280;
   --elev-card: 0 1px 2px rgb(23 43 77 / 0.06), 0 1px 3px rgb(23 43 77 / 0.04);
   --elev-pop: 0 8px 24px rgb(23 43 77 / 0.14);

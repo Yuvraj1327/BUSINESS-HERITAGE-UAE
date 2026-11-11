@@ -3,14 +3,15 @@ import { GuestRoute, ProtectedRoute } from '@/auth/guards'
 import { RequirePermission } from '@/auth/permission-guards'
 import { LoadingIndicator } from '@/components/common/loading-indicator'
 import { env } from '@/config/env'
-import { navLeaves } from '@/config/navigation'
 import { RootLayout } from '@/layouts/RootLayout'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage'
 import { BranchDateViewPage } from '@/pages/branch-date/BranchDateViewPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
-import { ModulePlaceholderPage } from '@/pages/ModulePlaceholderPage'
+import { BranchesPage } from '@/pages/admin/BranchesPage'
+import { UsersPage } from '@/pages/admin/UsersPage'
+import { MorePage } from '@/pages/MorePage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { CashBanksPage } from '@/pages/finance/CashBanksPage'
 import { ExpensesPage } from '@/pages/finance/ExpensesPage'
@@ -34,6 +35,7 @@ import { RouteErrorPage } from '@/pages/RouteErrorPage'
 import { SetupStatusPage } from '@/pages/SetupStatusPage'
 
 const appChildren: RouteObject[] = [
+  { path: 'more', element: <MorePage /> },
   {
     element: <RequirePermission module="dashboard" action="read" />,
     children: [{ index: true, element: <DashboardPage /> }],
@@ -204,16 +206,14 @@ const appChildren: RouteObject[] = [
       },
     ],
   },
-  // One protected route per module placeholder, generated from the navigation so menu and routes cannot drift.
-  // Each declares the same module/action as its menu entry; the real pages replace these in later steps.
-  ...navLeaves()
-    .filter((item) => item.status === 'placeholder' && item.to)
-    .map((item) => ({
-      element: (
-        <RequirePermission module={item.module} action={item.action} scope={item.requireScope} />
-      ),
-      children: [{ path: item.to, element: <ModulePlaceholderPage item={item} /> }],
-    })),
+  {
+    element: <RequirePermission module="branch_management" action="read" />,
+    children: [{ path: 'branches', element: <BranchesPage /> }],
+  },
+  {
+    element: <RequirePermission module="user_management" action="read" />,
+    children: [{ path: 'users', element: <UsersPage /> }],
+  },
   {
     // System status and the dev-only design system page belong to Settings.
     element: <RequirePermission module="settings" action="read" />,

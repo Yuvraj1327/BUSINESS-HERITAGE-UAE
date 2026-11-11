@@ -315,3 +315,34 @@ class TestAudit:
         conn.execute("update public.profiles set full_name='X' where user_id=%s", [w.main])
         text = json.dumps(q(conn, "select old_values, new_values from public.audit_log where table_name='profiles'"), default=str)
         assert "password" not in text.lower() and "token" not in text.lower()
+
+
+# ------------------------------------------------------------------ migration 0018: first-login password change flag
+class TestFirstLoginPasswordFlag:
+    def test_defaults_false_and_there_is_no_password_column(self, conn, w):
+        assert one(conn, "select must_change_password from public.profiles where user_id=%s", [w.main]) is False
+        cols = {r[0] for r in q(conn, "select column_name from information_schema.columns where table_name='profiles'")}
+        assert not {c for c in cols if "password" in c or "secret" in c} - {"must_change_password"}
+
+    def test_user_cannot_clear_or_set_flag_by_direct_update(self, conn, w):
+        conn.execute("update public.profiles set must_change_password = true where user_id=%s", [w.main])
+        with as_user(conn, w.main):
+            assert conn.execute("update public.profiles set must_change_password = false where user_id=%s",
+                                [w.main]).rowcount == 0  # RLS: profile writes are owner-only
+        assert one(conn, "select must_change_password from public.profiles where user_id=%s", [w.main]) is True
+
+    def test_complete_password_change_clears_only_the_callers_flag(self, conn, w):
+        conn.execute("update public.profiles set must_change_password = true where user_id in (%s, %s)", [w.main, w.jernas])
+        with as_user(conn, w.main):
+            conn.execute("select app.complete_password_change()")
+        assert one(conn, "select must_change_password from public.profiles where user_id=%s", [w.main]) is False
+        assert one(conn, "select must_change_password from public.profiles where user_id=%s", [w.jernas]) is True
+
+    def test_function_not_callable_by_anon(self, conn, w):
+        with pytest.raises(E.InsufficientPrivilege), as_anon(conn):
+            conn.execute("select app.complete_password_change()")
+
+    def test_branch_isolation_is_unchanged_while_flag_is_set(self, conn, w):
+        conn.execute("update public.profiles set must_change_password = true where user_id=%s", [w.main])
+        with as_user(conn, w.main):
+            assert {r[0] for r in conn.execute("select id from public.branches").fetchall()} == {w.branch["ALSAFA MAIN"]}

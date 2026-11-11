@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/auth/use-auth'
 import { LoadingIndicator } from '@/components/common/loading-indicator'
 import { AccessDeniedPage } from '@/pages/auth/AccessDeniedPage'
+import { ChangePasswordPage } from '@/pages/auth/ChangePasswordPage'
 import { ConfigMissingPage } from '@/pages/auth/ConfigMissingPage'
 
 function FullScreenLoading({ label }: { label: string }) {
@@ -36,7 +37,8 @@ export function ProtectedRoute() {
 
   switch (auth.profileStatus) {
     case 'ready':
-      return <Outlet />
+      // Owner-issued initial password: nothing else is reachable (the API refuses it too) until it is replaced.
+      return auth.profile?.must_change_password ? <ChangePasswordPage /> : <Outlet />
     case 'missing':
     case 'inactive':
     case 'error':

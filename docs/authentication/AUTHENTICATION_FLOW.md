@@ -53,6 +53,18 @@ On page load `AuthProvider` is in status `loading` until supabase-js has read th
 
 Set the same minimum length (10) in the Supabase dashboard (`SUPABASE_SETUP.md`) so the server enforces what the form promises.
 
+## First login with an Owner-issued password
+The Owner creates a Branch User with an initial password (`POST /users`, Supabase Admin API, no invitation email) and the
+profile gets `must_change_password = true`.
+1. The user signs in with email + initial password (normal `signInWithPassword`; public signup stays off).
+2. `GET /auth/profile` returns `must_change_password: true`; `ProtectedRoute` renders only the *Change your password* page.
+3. Server-side enforcement: every business route goes through `get_current_profile`, which answers `403 password_change_required`
+   while the flag is set. Only `/auth/me`, `/auth/profile` and `/auth/change-password` are exempt, so skipping the page in the browser gains nothing.
+4. The page re-checks the current password, requires a different, strong new password + matching confirmation, then calls
+   `POST /auth/change-password`. The API updates the password through the Supabase Admin API and clears the flag with
+   `app.complete_password_change()` (SECURITY DEFINER; touches only the caller's own row). The app opens.
+Limits: the server cannot compare the new password with the initial one (it never stores it); the page does that. Nobody can clear the flag by writing to `profiles` (RLS: owner-only writes).
+
 ## Routes
 | Path | Access | Notes |
 |---|---|---|

@@ -156,6 +156,7 @@ class AnalyticsRepository(BaseRepository):
         tables: list[str] | None,
         action: str | None,
         actor: uuid.UUID | None,
+        source: str | None,
         q: str | None,
         limit: int | None,
         offset: int,
@@ -163,11 +164,14 @@ class AnalyticsRepository(BaseRepository):
         where = """(a.occurred_at at time zone 'Asia/Dubai')::date between :f and :t
                    and (cast(:acts as text) is null or a.action = cast(:acts as text))
                    and (cast(:actor as uuid) is null or a.actor_user_id = cast(:actor as uuid))
+                   and (cast(:source as text) is null
+                        or (cast(:source as text) = 'user' and a.actor_user_id is not null)
+                        or (cast(:source as text) = 'system' and a.actor_user_id is null))
                    and (:no_tables or a.table_name = any(:tables))
                    and (cast(:q as text) is null or a.record_id ilike '%' || cast(:q as text) || '%'
                         or coalesce(a.reason, '') ilike '%' || cast(:q as text) || '%')"""
         p = {
-            "f": d_from, "t": d_to, "acts": action, "actor": actor, "q": q,
+            "f": d_from, "t": d_to, "acts": action, "actor": actor, "source": source, "q": q,
             "no_tables": not tables, "tables": tables or [],
         }  # fmt: skip
         n = self._one(f"select count(*) as n from public.audit_log a where {where}", p)  # noqa: S608

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { PageHeader } from '@/components/layout/page-header'
+import { PageHero } from '@/components/layout/page-hero'
 import { cn } from '@/lib/utils'
 
 interface PageContainerProps {
@@ -10,7 +10,7 @@ interface PageContainerProps {
   className?: string
 }
 
-/** Standard page frame: responsive width and padding, a PageHeader, then the page's sections. */
+/** Standard page frame: responsive width and padding, a PageHero band, then the page's sections. */
 export function PageContainer({
   title,
   description,
@@ -25,7 +25,7 @@ export function PageContainer({
         className,
       )}
     >
-      <PageHeader title={title} description={description} actions={actions} />
+      <PageHero title={title} description={description} actions={actions} />
       {children}
     </section>
   )

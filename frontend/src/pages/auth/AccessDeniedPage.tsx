@@ -15,7 +15,7 @@ export function AccessDeniedPage() {
       : profileStatus === 'missing'
         ? {
             title: 'Account not set up',
-            body: 'Your sign-in works, but your account has not been set up yet. Please contact the administrator.',
+            body: 'Your sign-in is valid, but no ERP profile (role and branch) has been created for this account, so access is blocked. Ask an Owner to set it up, then sign in again.',
           }
         : {
             title: 'Could not load your account',

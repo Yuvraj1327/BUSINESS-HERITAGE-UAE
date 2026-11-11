@@ -30,3 +30,30 @@ class ProfileRepository(BaseRepository):
     def list_all(self) -> list[Profile]:
         """All profiles visible to the caller (RLS: only an owner sees more than their own row)."""
         return list(self.session.scalars(select(Profile).order_by(Profile.full_name)))
+
+    def branch_exists_active(self, branch_id: uuid.UUID) -> bool:
+        row = self.session.execute(
+            text("select is_active from public.branches where id = :id"), {"id": branch_id}
+        ).first()
+        return row is not None and bool(row[0])
+
+    def add_branch_user(self, user_id: uuid.UUID, full_name: str, branch_id: uuid.UUID) -> Profile:
+        """Insert a Branch User profile as the signed-in Owner (RLS policy profiles_insert_owner applies;
+        the role is fixed here, never taken from a request). Commits."""
+        profile = Profile(
+            user_id=user_id,
+            full_name=full_name,
+            role="branch",
+            branch_id=branch_id,
+            is_active=True,
+            must_change_password=True,  # the Owner chose the initial password; the user must replace it
+        )
+        self.session.add(profile)
+        self.session.commit()
+        self.session.refresh(profile)
+        return profile
+
+    def complete_password_change(self) -> None:
+        """Clear the caller's own must-change flag (SECURITY DEFINER function; touches only auth.uid()'s row)."""
+        self.session.execute(text("select app.complete_password_change()"))
+        self.session.commit()

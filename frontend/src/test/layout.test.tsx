@@ -48,6 +48,7 @@ const apiFor = (profile: object) =>
     if (c.url === '/dashboard/owner') return { status: 200, body: OWNER_DASHBOARD }
     if (c.url === '/branch-date-view') return { status: 200, body: BRANCH_VIEW_EMPTY }
     if (c.url === '/alerts/summary') return { status: 200, body: alertSummary() }
+    if (c.url === '/users') return { status: 200, body: [] }
     return { status: 200, body: profile }
   })
 
@@ -167,8 +168,8 @@ describe('navigation structure and permissions', () => {
 
   it('marks the current page in the navigation', async () => {
     apiFor(PROFILE_OWNER)
-    renderApp('/users') // a module that is still a placeholder
-    await screen.findByText('This module is not built yet')
+    renderApp('/users')
+    await screen.findByText('No users found')
     expect(within(nav()).getByRole('link', { name: 'User Management' })).toHaveAttribute(
       'aria-current',
       'page',
@@ -223,23 +224,23 @@ describe('role layouts', () => {
   })
 })
 
-describe('module placeholders and protected routes', () => {
-  it('permitted module placeholder opens inside the shell', async () => {
+describe('admin pages and protected routes', () => {
+  it('a permitted admin page opens inside the shell', async () => {
     apiFor(PROFILE_OWNER)
     renderApp('/users')
     expect(
       await screen.findByRole('heading', { name: 'User Management', level: 1 }),
     ).toBeInTheDocument()
-    expect(screen.getByText('This module is not built yet')).toBeInTheDocument()
+    expect(await screen.findByText('No users found')).toBeInTheDocument()
   })
 
-  it.each(['/suppliers', '/cash-banks', '/users', '/settings', '/tasks'])(
+  it.each(['/suppliers', '/cash-banks', '/users', '/system-status', '/tasks'])(
     'branch user typing %s sees Access denied inside the shell',
     async (path) => {
       apiFor(PROFILE_BRANCH)
       renderApp(path)
       expect(await screen.findByText('Access denied')).toBeInTheDocument()
-      expect(screen.queryByText('This module is not built yet')).not.toBeInTheDocument()
+      expect(screen.queryByText('No users found')).not.toBeInTheDocument()
       expect(nav()).toBeInTheDocument() // the shell stays usable
     },
   )
@@ -317,7 +318,7 @@ describe('responsive behaviour', () => {
     apiFor(PROFILE_OWNER)
     localStorage.setItem('alsafa.sidebar.collapsed', '1')
     renderApp('/users')
-    await screen.findByText('This module is not built yet')
+    await screen.findByText('No users found')
     const active = within(nav()).getByRole('link', { name: 'User Management' })
     expect(active.className).not.toMatch(/=>|function|\{/)
     expect(active).toHaveClass('justify-center', 'bg-sidebar-accent')

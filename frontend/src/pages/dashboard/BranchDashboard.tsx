@@ -5,7 +5,7 @@ import { SectionCard } from '@/components/common/section-card'
 import { StatCard } from '@/components/common/stat-card'
 import { ErrorState } from '@/components/common/error-state'
 import { useBranchContext } from '@/components/layout/branch-context'
-import { PageContainer } from '@/components/layout/page-container'
+import { PageHero } from '@/components/layout/page-hero'
 import { MissingPanel } from '@/components/reporting/missing-panel'
 import { ReportsTable } from '@/components/reporting/reports-table'
 import { Badge } from '@/components/ui/badge'
@@ -22,7 +22,8 @@ export function BranchDashboard() {
   const t = view.data?.totals
 
   return (
-    <PageContainer title="Dashboard" description="Your branch, last 7 days.">
+    <section className="mx-auto w-full max-w-7xl min-w-0 space-y-6 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <PageHero banner title="Dashboard" description="Your branch, last 7 days." />
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border bg-card px-4 py-3 shadow-card">
         <div className="flex items-center gap-2">
           <Building2 className="size-5 text-teal" aria-hidden />
@@ -47,7 +48,7 @@ export function BranchDashboard() {
         <ErrorState error={view.error} onRetry={() => void view.refetch()} />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             <StatCard
               label="Total Sales"
               isLoading={view.isLoading}
@@ -86,6 +87,6 @@ export function BranchDashboard() {
           </SectionCard>
         </>
       )}
-    </PageContainer>
+    </section>
   )
 }

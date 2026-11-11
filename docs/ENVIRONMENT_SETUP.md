@@ -7,7 +7,7 @@ Everything prefixed `VITE_` is compiled into the browser bundle and visible to e
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `VITE_API_BASE_URL` | production: yes; dev default `http://localhost:8000/api/v1` | FastAPI base URL including `/api/v1` |
+| `VITE_API_BASE_URL` | production: yes; dev default `http://localhost:8008/api/v1` | FastAPI base URL including `/api/v1` |
 | `VITE_SUPABASE_URL` | production: yes (https) | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | production: yes | Supabase anon / publishable key (public by design) |
 
@@ -36,7 +36,7 @@ Settings are validated at startup (`app/core/config.py`): in `production` a miss
 - Production: docs disabled, JSON logs, database and Supabase settings required, explicit CORS origins.
 
 ## Security notes
-- **Service-role key:** not a setting of the API (a test enforces this) and never a `VITE_*` variable. Only the operator tool `backend/scripts/provision_account.py` reads `SUPABASE_SERVICE_ROLE_KEY`, from the operator's shell environment.
+- **Service-role key:** `SUPABASE_SERVICE_ROLE_KEY` is read only by the backend (Owner-created Branch Users and the first-login password change, via the Supabase Admin API) and by the operator tool `backend/scripts/provision_account.py`. It is a `SecretStr`, never logged, never returned, and never a `VITE_*` variable. `PROVISION_EMAIL_CONFIRMED` (default `true`) decides whether Owner-created users' email is pre-confirmed.
 - **Database access:** the API connects as the restricted `app_api` role and, per transaction, switches to `authenticated` with the verified user's claims so RLS applies (`docs/authentication/AUTHENTICATION_FLOW.md`). Never use the `postgres` or `service_role` credentials for ordinary requests.
 - **Pooler:** the engine disables psycopg server-side prepared statements (`prepare_threshold=None`) for Supabase's transaction pooler.
 - Rotate any key that was ever pasted into chat, an issue or a commit.

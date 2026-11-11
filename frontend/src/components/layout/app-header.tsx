@@ -1,10 +1,12 @@
 import { PanelLeft, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Brand } from '@/components/layout/brand'
 import { Breadcrumbs } from '@/components/layout/breadcrumbs'
 import { NotificationMenu } from '@/components/layout/notification-menu'
 import { UserMenu } from '@/components/layout/user-menu'
 import { Button } from '@/components/ui/button'
 import { BUSINESS_TIMEZONE } from '@/constants'
+import { useLayoutMode } from '@/hooks/use-media-query'
 import { dubaiToday } from '@/utils/format'
 
 /** The drawer is opened without a Radix trigger, so it hands focus back to this button by id when it closes. */
@@ -29,6 +31,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ toggle, onToggle, extra }: AppHeaderProps) {
+  const mobile = useLayoutMode() === 'mobile'
   const label =
     toggle.kind === 'drawer'
       ? 'Open navigation'
@@ -38,7 +41,7 @@ export function AppHeader({ toggle, onToggle, extra }: AppHeaderProps) {
   const Icon =
     toggle.kind === 'drawer' ? PanelLeft : toggle.collapsed ? PanelLeftOpen : PanelLeftClose
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-card px-3 sm:px-4">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-card px-3 shadow-sm sm:px-4">
       <Button
         variant="ghost"
         size="icon"
@@ -50,7 +53,13 @@ export function AppHeader({ toggle, onToggle, extra }: AppHeaderProps) {
       >
         <Icon aria-hidden />
       </Button>
-      <Breadcrumbs className="flex-1" />
+      {mobile ? (
+        <div className="flex min-w-0 flex-1 justify-center">
+          <Brand compactText />
+        </div>
+      ) : (
+        <Breadcrumbs className="flex-1" />
+      )}
       <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         {extra ? <div>{extra}</div> : null}
         <time
@@ -60,7 +69,7 @@ export function AppHeader({ toggle, onToggle, extra }: AppHeaderProps) {
           {todayLabel()}
         </time>
         <NotificationMenu />
-        <UserMenu />
+        {mobile ? null : <UserMenu />}
       </div>
     </header>
   )

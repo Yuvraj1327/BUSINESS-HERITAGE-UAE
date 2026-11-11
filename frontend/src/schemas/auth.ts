@@ -19,14 +19,19 @@ export type LoginValues = z.infer<typeof loginSchema>
 export const forgotPasswordSchema = z.object({ email })
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>
 
+/** Same rules as the backend (app/core/passwords.py); the server re-checks them. */
+export const strongPassword = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, `Use at least ${PASSWORD_MIN_LENGTH} characters`)
+  .max(72, 'Use at most 72 characters')
+  .regex(/[a-z]/, 'Include a lower case letter')
+  .regex(/[A-Z]/, 'Include an upper case letter')
+  .regex(/\d/, 'Include at least one number')
+  .refine((v) => v === v.trim(), 'Must not start or end with a space')
+
 export const newPasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, `Use at least ${PASSWORD_MIN_LENGTH} characters`)
-      .max(72, 'Use at most 72 characters')
-      .regex(/[A-Za-z]/, 'Include at least one letter')
-      .regex(/\d/, 'Include at least one number'),
+    password: strongPassword,
     confirmPassword: z.string().min(1, 'Confirm your new password'),
   })
   .refine((v) => v.password === v.confirmPassword, {
@@ -42,6 +47,8 @@ export const profileSchema = z.object({
   branch_id: z.string().nullable(),
   branch_name: z.string().nullable(),
   is_active: z.boolean(),
+  /** True until the user replaces the Owner-issued initial password (server blocks everything else meanwhile). */
+  must_change_password: z.boolean().default(false),
   /** Display hints from the server's central permission matrix. The API re-checks every request. */
   permissions: z.record(
     z.string(),

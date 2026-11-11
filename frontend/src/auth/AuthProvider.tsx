@@ -109,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             'branch_access_denied',
             'account_inactive',
             'profile_missing',
+            'password_change_required',
           ].includes(err.code)
         ) {
           setReloadKey((k) => k + 1)

@@ -20,6 +20,13 @@ class AccountInactiveError(ForbiddenError):
         super().__init__("This account is inactive. Please contact the administrator.")
 
 
+class PasswordChangeRequiredError(ForbiddenError):
+    code = "password_change_required"
+
+    def __init__(self) -> None:
+        super().__init__("You must change your password before continuing.")
+
+
 class AuthService:
     def __init__(self, profiles: ProfileRepository) -> None:
         self.profiles = profiles
@@ -33,6 +40,13 @@ class AuthService:
             raise AccountInactiveError()
         return profile
 
+    def require_ready_profile(self, claims: TokenClaims) -> Profile:
+        """Active profile AND no pending first-login password change. Used by every business route."""
+        profile = self.require_active_profile(claims)
+        if profile.must_change_password:
+            raise PasswordChangeRequiredError()
+        return profile
+
     def profile_response(self, claims: TokenClaims) -> ProfileResponse:
         profile = self.require_active_profile(claims)
         return ProfileResponse(
@@ -42,5 +56,6 @@ class AuthService:
             branch_id=profile.branch_id,
             branch_name=self.profiles.branch_name(profile.branch_id),
             is_active=profile.is_active,
+            must_change_password=profile.must_change_password,
             permissions=permissions_for(profile.role),
         )

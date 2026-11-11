@@ -930,3 +930,23 @@ def test_activity_export_is_complete_and_owner_only(world) -> None:
     data = [row for row in lines[head + 1 :] if len(row) == 7]
     assert len(data) == full["total"] > 5
     assert world.get("/reports/activity/export", who="branch", format="xlsx").status_code == 403
+
+
+def test_activity_source_filter_and_system_label(world, admin) -> None:
+    """System rows (no signed-in user) are labelled and filterable; user rows carry the real actor name."""
+    allr = world.get(
+        "/reports/activity", date_from=iso(D1), date_to=iso(TODAY), page_size=200
+    ).json()
+    users = world.get(
+        "/reports/activity", date_from=iso(D1), date_to=iso(TODAY), page_size=200, source="user"
+    ).json()
+    system = world.get(
+        "/reports/activity", date_from=iso(D1), date_to=iso(TODAY), page_size=200, source="system"
+    ).json()
+    assert users["total"] + system["total"] == allr["total"]
+    assert all(r["source"] == "User" and r["user"] != "System" for r in users["rows"])
+    assert all(r["source"] == "System" and r["user"].startswith("System") for r in system["rows"])
+    assert (
+        world.get("/reports/activity", date_from=iso(D1), date_to=iso(TODAY), source="bogus").status_code
+        == 422
+    )
