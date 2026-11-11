@@ -318,9 +318,9 @@ def test_catalog_lists_every_report(world) -> None:
 def test_every_report_runs_with_real_data(world) -> None:
     for key in KEYS:
         j = rep(world, key)
-        assert j["key"] == key and j["columns"] and j["filters"]["branch_name"] == "All Branches", (
-            key
-        )
+        assert (
+            j["key"] == key and j["columns"] and j["filters"]["branch_name"] == "All Branches"
+        ), key
         for r in j["rows"]:
             assert set(r) >= {c["key"] for c in j["columns"]}, (key, r)
 
@@ -947,6 +947,8 @@ def test_activity_source_filter_and_system_label(world, admin) -> None:
     assert all(r["source"] == "User" and r["user"] != "System" for r in users["rows"])
     assert all(r["source"] == "System" and r["user"].startswith("System") for r in system["rows"])
     assert (
-        world.get("/reports/activity", date_from=iso(D1), date_to=iso(TODAY), source="bogus").status_code
+        world.get(
+            "/reports/activity", date_from=iso(D1), date_to=iso(TODAY), source="bogus"
+        ).status_code
         == 422
     )

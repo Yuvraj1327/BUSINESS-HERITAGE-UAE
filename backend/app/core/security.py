@@ -74,7 +74,7 @@ class TokenClaims:
 JwksFetcher = Callable[[], dict[str, Any]]
 
 
-def http_jwks_fetcher(url: str, timeout: float = 5.0) -> JwksFetcher:
+def http_jwks_fetcher(url: str, timeout: float = 10.0) -> JwksFetcher:
     def fetch() -> dict[str, Any]:
         resp = httpx.get(url, timeout=timeout, follow_redirects=False)
         resp.raise_for_status()

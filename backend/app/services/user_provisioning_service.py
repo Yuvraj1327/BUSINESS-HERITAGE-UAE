@@ -150,10 +150,16 @@ class UserProvisioningService:
         )
         try:
             return self.profiles.add_branch_user(user_id, data.full_name, data.branch_id)
-        except IntegrityError:
+        except IntegrityError as exc:
             self.profiles.session.rollback()
             self._compensate(admin, user_id)
-            raise ConflictError("This user already has a profile.") from None
+            orig = getattr(exc, "orig", None)
+            sqlstate = getattr(orig, "sqlstate", None)
+            constraint = getattr(getattr(orig, "diag", None), "constraint_name", None)
+            logger.warning("profile insert failed: sqlstate=%s constraint=%s", sqlstate, constraint)
+            if sqlstate == "23505":  # unique_violation: a profile for this user id really exists
+                raise ConflictError("This user already has a profile.") from None
+            raise  # any other integrity problem is a bug/config issue: 500 with details in the server log
         except BaseException:
             self.profiles.session.rollback()
             self._compensate(admin, user_id)

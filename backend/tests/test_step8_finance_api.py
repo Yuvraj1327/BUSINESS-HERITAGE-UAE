@@ -1157,9 +1157,9 @@ def test_branch_user_has_no_database_access_to_finance_tables(golden, app_url, b
         "opening_branch_cash",
         "suppliers",
     ):
-        assert s.execute(text(f"select count(*) from public.{t}")).scalar() == 0, (
-            t
-        )  # RLS hides every row
+        assert (
+            s.execute(text(f"select count(*) from public.{t}")).scalar() == 0
+        ), t  # RLS hides every row
     from sqlalchemy.exc import DBAPIError
 
     for fn in (

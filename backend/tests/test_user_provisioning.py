@@ -135,7 +135,9 @@ def test_unknown_or_inactive_branch_is_rejected_before_creating_an_auth_user() -
 
 
 def test_duplicate_profile_removes_the_new_auth_user_again() -> None:
-    profiles = StubProfiles(fail=IntegrityError("x", {}, Exception("dup")))
+    dup = Exception("dup")
+    dup.sqlstate = "23505"  # type: ignore[attr-defined]
+    profiles = StubProfiles(fail=IntegrityError("x", {}, dup))
     stub = AuthStub()
     with pytest.raises(ConflictError):
         service(profiles, stub).create_branch_user(principal(Role.OWNER), DATA)
@@ -227,3 +229,12 @@ def test_password_confirmation_must_match_and_is_never_echoed() -> None:
         )
     assert PASSWORD not in str(exc.value) and "do not match" in str(exc.value)
     assert PASSWORD not in repr(DATA)  # SecretStr: safe in logs / tracebacks
+
+
+def test_other_integrity_errors_are_not_reported_as_duplicates_but_still_clean_up() -> None:
+    other = Exception("fk")
+    other.sqlstate = "23503"  # type: ignore[attr-defined]
+    profiles, stub = StubProfiles(fail=IntegrityError("x", {}, other)), AuthStub()
+    with pytest.raises(IntegrityError):
+        service(profiles, stub).create_branch_user(principal(Role.OWNER), DATA)
+    assert ("DELETE", f"/auth/v1/admin/users/{NEW_ID}") in stub.calls
