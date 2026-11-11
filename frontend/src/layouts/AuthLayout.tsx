@@ -15,7 +15,7 @@ export function AuthLayout({
   footer?: ReactNode
 }) {
   return (
-    <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#6f9ccb] px-4 py-8 lg:px-[7vw]">
+    <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[#6f9ccb] px-4 py-8">
       {/* Responsive hero backdrop: portrait art on phones, 16:9 art from `md` up. Width/height reserve the
           aspect ratio; object-cover keeps it undistorted and anchors the subject (bottom / bottom-right). */}
       <picture className="absolute inset-0 -z-10">
@@ -36,10 +36,10 @@ export function AuthLayout({
           fetchPriority="high"
           decoding="async"
           draggable={false}
-          className="size-full object-cover object-bottom md:object-[85%_100%]"
+          className="size-full scale-105 object-cover object-bottom blur-[3px] md:object-[85%_100%]"
         />
       </picture>
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 lg:mx-0">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6">
         <div className="mx-auto w-fit rounded-full bg-white/20 p-2 shadow-lg backdrop-blur-sm">
           <Brand light stacked className="justify-center" />
         </div>
