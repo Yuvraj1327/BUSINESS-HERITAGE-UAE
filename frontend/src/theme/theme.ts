@@ -6,9 +6,9 @@ export const THEME_STORAGE_KEY = 'alsafa-theme'
 export function readStoredTheme(): ThemeChoice {
   try {
     const v = localStorage.getItem(THEME_STORAGE_KEY)
-    return v === 'light' || v === 'dark' || v === 'system' ? v : 'system'
+    return v === 'light' || v === 'dark' || v === 'system' ? v : 'light'
   } catch {
-    return 'system'
+    return 'light'
   }
 }
 

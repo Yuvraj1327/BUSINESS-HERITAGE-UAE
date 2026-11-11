@@ -11,8 +11,7 @@
         var t = localStorage.getItem('alsafa-theme')
         var dark =
           t === 'dark' ||
-          ((t === null || t === 'system') &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches)
+          (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
         if (dark) {
           document.documentElement.classList.add('dark')
           document.documentElement.style.colorScheme = 'dark'

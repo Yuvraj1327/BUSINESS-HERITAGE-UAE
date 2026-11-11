@@ -42,7 +42,7 @@ class NotificationPreferences(BaseModel):
 class Preferences(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    theme: Theme = "system"
+    theme: Theme = "light"
     language: Language = "en"
     date_format: DateFormat = "dd-mmm-yyyy"
     timezone: str = "Asia/Dubai"

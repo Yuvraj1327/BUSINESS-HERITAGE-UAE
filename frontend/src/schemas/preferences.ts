@@ -24,7 +24,7 @@ export const DISPLAY_TIMEZONES = [
 ] as const
 
 export const preferencesSchema = z.object({
-  theme: z.enum(THEMES).catch('system'),
+  theme: z.enum(THEMES).catch('light'),
   language: z.literal('en').catch('en'),
   date_format: z
     .enum(['dd-mmm-yyyy', 'dd/mm/yyyy', 'mm/dd/yyyy', 'yyyy-mm-dd'])

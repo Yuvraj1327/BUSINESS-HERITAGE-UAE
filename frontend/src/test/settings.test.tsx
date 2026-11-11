@@ -345,7 +345,7 @@ describe('schemas and helpers', () => {
     expect(
       preferencesSchema.parse({ theme: 'neon', timezone: 'Mars/Base', notifications: 5 }),
     ).toMatchObject({
-      theme: 'system',
+      theme: 'light',
       timezone: 'Asia/Dubai',
       notifications: { critical: true, warning: true, info: true },
     })
