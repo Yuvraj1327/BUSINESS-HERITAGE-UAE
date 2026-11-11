@@ -32,7 +32,7 @@ export function Brand({
           'grid shrink-0 place-items-center overflow-hidden bg-white shadow-sm ring-1',
           light ? 'ring-white/20' : 'ring-border',
           stacked
-            ? 'size-24 rounded-2xl p-1.5 shadow-lg sm:size-28'
+            ? 'size-44 rounded-full shadow-lg sm:size-52'
             : compactText
               ? 'size-9 rounded-lg p-0.5'
               : 'size-10 rounded-xl p-0.5',
@@ -41,13 +41,13 @@ export function Brand({
         <img
           src="/logo.png"
           alt=""
-          width={112}
-          height={112}
+          width={512}
+          height={512}
           className="size-full object-contain"
           draggable={false}
         />
       </span>
-      <span className={cn('leading-none', compact && 'sr-only')}>
+      <span className={cn('leading-none', (compact || stacked) && 'sr-only')}>
         <span
           className={cn(
             'block font-bold uppercase',
