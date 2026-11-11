@@ -26,6 +26,8 @@ export interface AuthContextValue {
   clearSessionEnded: () => void
   signOut: () => Promise<void>
   reloadProfile: () => void
+  /** Replace the loaded profile with a fresh server copy (after a self-service edit) without a loading state. */
+  applyProfile: (profile: UserProfile) => void
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

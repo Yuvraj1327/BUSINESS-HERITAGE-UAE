@@ -4,6 +4,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, SecretStr, model_validator
 
 from app.core.passwords import validate_new_password
+from app.schemas.settings import Preferences
 
 
 class AuthMeResponse(BaseModel):
@@ -23,6 +24,10 @@ class ProfileResponse(BaseModel):
     branch_id: uuid.UUID | None
     branch_name: str | None
     is_active: bool
+    phone: str | None = None
+    # Key in the private Storage bucket "avatars" (the browser turns it into a short-lived signed URL).
+    avatar_path: str | None = None
+    preferences: Preferences = Preferences()
     # True until the user replaces the Owner-issued initial password. The API refuses everything else meanwhile.
     must_change_password: bool = False
     # Display hints for the UI, derived from the central matrix. The API re-checks every request.

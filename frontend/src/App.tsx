@@ -5,13 +5,16 @@ import { ErrorBoundary } from '@/components/common/error-boundary'
 import { Toaster } from '@/components/ui/sonner'
 import { queryClient } from '@/lib/query-client'
 import { router } from '@/routes'
+import { ThemeProvider } from '@/theme/ThemeProvider'
 
 export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <RouterProvider router={router} />
+          <ThemeProvider>
+            <RouterProvider router={router} />
+          </ThemeProvider>
         </AuthProvider>
         <Toaster />
       </QueryClientProvider>

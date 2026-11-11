@@ -41,3 +41,7 @@ Settings are validated at startup (`app/core/config.py`): in `production` a miss
 - **Pooler:** the engine disables psycopg server-side prepared statements (`prepare_threshold=None`) for Supabase's transaction pooler.
 - Rotate any key that was ever pasted into chat, an issue or a commit.
 - Supabase auth tokens are sent as `Authorization: Bearer` headers (no cookies), so CORS `allow_credentials` is off.
+
+
+## Optional frontend variables (Settings > About)
+`VITE_SUPPORT_EMAIL`, `VITE_SUPPORT_PHONE`: shown as the support contact. When empty the page says to contact the administrator. See `docs/settings/SETTINGS.md`.

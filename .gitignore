@@ -33,3 +33,5 @@ Thumbs.db
 
 # Local archives and scratch files
 /*.zip
+.vercel
+.env*

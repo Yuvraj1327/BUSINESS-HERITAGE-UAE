@@ -36,7 +36,7 @@ Reasons: one place for business rules; RLS remains a real second barrier; servic
 | Time zone | Asia/Dubai | PDF rule |
 | SQLAlchemy mode | Synchronous | Simpler; load is 10 branches |
 | Exports | Server-side generation (Excel/PDF), permission-checked | Prototype had none |
-| Theme | Light only v1 (D24) | Brief |
+| Theme | Light (default), Dark, System; per user (D24 superseded) | Settings > Appearance |
 
 ## 4. Backend layout (recommended)
 

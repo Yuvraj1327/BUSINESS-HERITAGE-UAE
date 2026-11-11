@@ -6,6 +6,7 @@ import { AuthProvider } from '@/auth/AuthProvider'
 import { MODULES } from '@/auth/permissions'
 import { apiClient } from '@/lib/api-client'
 import { appRoutes } from '@/routes'
+import { ThemeProvider } from '@/theme/ThemeProvider'
 
 export interface ApiReply {
   status: number
@@ -108,7 +109,9 @@ export function renderApp(path = '/') {
   const utils = render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>,
   )

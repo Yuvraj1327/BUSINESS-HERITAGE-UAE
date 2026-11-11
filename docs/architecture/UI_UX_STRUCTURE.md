@@ -1,6 +1,6 @@
 # UI_UX_STRUCTURE — ALSAFA Heritage Laundry ERP
 
-Direction: modern enterprise ERP, light theme only in v1 (D24), navy and professional-blue accents, white/light-grey surfaces, consistent typography, clean sidebar, KPI cards, Recharts charts, responsive tables and forms. The second PDF is a visual reference only (KPI row, pipeline panel, quick actions, report slicers); its order-centric content is not part of core navigation.
+Direction: modern enterprise ERP, light theme by default with a user-selectable dark theme (D24), navy and professional-blue accents, white/light-grey surfaces, consistent typography, clean sidebar, KPI cards, Recharts charts, responsive tables and forms. The second PDF is a visual reference only (KPI row, pipeline panel, quick actions, report slicers); its order-centric content is not part of core navigation.
 
 ## 1. Route hierarchy
 

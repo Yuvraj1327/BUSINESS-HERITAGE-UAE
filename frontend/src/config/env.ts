@@ -12,6 +12,8 @@ const rawSchema = z.object({
   VITE_API_BASE_URL: z.url().optional(),
   VITE_SUPABASE_URL: z.union([z.url(), z.literal('')]).optional(),
   VITE_SUPABASE_ANON_KEY: z.string().optional(),
+  VITE_SUPPORT_EMAIL: z.string().optional(),
+  VITE_SUPPORT_PHONE: z.string().optional(),
 })
 
 const DEV_DEFAULT_API = 'http://localhost:8008/api/v1'
@@ -66,6 +68,8 @@ export function parseEnv(source: Record<string, unknown>) {
     apiBaseUrl: (e.VITE_API_BASE_URL ?? DEV_DEFAULT_API).replace(/\/+$/, ''),
     supabaseUrl: e.VITE_SUPABASE_URL ?? '',
     supabaseAnonKey: anonKey,
+    supportEmail: (e.VITE_SUPPORT_EMAIL ?? '').trim(),
+    supportPhone: (e.VITE_SUPPORT_PHONE ?? '').trim(),
     supabaseConfigured: Boolean(e.VITE_SUPABASE_URL && anonKey),
   } as const
 }

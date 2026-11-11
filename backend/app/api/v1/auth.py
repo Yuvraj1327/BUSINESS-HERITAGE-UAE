@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Request, status
 from app.api.deps import CurrentClaims, DbSession, get_auth_service
 from app.repositories.profile_repository import ProfileRepository
 from app.schemas.auth import AuthMeResponse, ChangePasswordRequest, ProfileResponse
+from app.schemas.settings import Preferences, ProfileUpdate
 from app.services.auth_service import AuthService
 from app.services.user_provisioning_service import change_own_password
 
@@ -54,3 +55,29 @@ def change_password(
         profile.user_id,
         body.new_password.get_secret_value(),
     )
+
+
+@router.patch(
+    "/profile",
+    response_model=ProfileResponse,
+    summary="Edit your own name, phone and photo (any active user; never role or branch)",
+)
+def update_profile(
+    body: ProfileUpdate,
+    claims: CurrentClaims,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> ProfileResponse:
+    return service.update_own_profile(claims, body)
+
+
+@router.put(
+    "/preferences",
+    response_model=ProfileResponse,
+    summary="Save your own display and notification preferences",
+)
+def save_preferences(
+    body: Preferences,
+    claims: CurrentClaims,
+    service: Annotated[AuthService, Depends(get_auth_service)],
+) -> ProfileResponse:
+    return service.save_preferences(claims, body)

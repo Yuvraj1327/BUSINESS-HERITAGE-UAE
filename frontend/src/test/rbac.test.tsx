@@ -173,11 +173,12 @@ describe('changes while signed in', () => {
     stubApi(() => ({ status: 200, body: profile }))
     renderApp('/')
     await screen.findByRole('heading', { name: 'Dashboard' })
-    expect(within(nav()).getByRole('button', { name: 'Settings' })).toBeInTheDocument()
+    await userEvent.setup().click(within(nav()).getByRole('button', { name: 'Settings' }))
+    expect(within(nav()).getByRole('link', { name: 'System status' })).toBeInTheDocument()
     profile = PROFILE_BRANCH
     sb.emit('TOKEN_REFRESHED', makeSession())
     await waitFor(() =>
-      expect(within(nav()).queryByRole('button', { name: 'Settings' })).not.toBeInTheDocument(),
+      expect(within(nav()).queryByRole('link', { name: 'System status' })).not.toBeInTheDocument(),
     )
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
   })
@@ -236,7 +237,11 @@ describe('user interaction sanity', () => {
     stubApi(() => ({ status: 200, body: PROFILE_BRANCH }))
     renderApp('/')
     await screen.findByRole('heading', { name: 'Dashboard' })
-    await userEvent.setup().click(screen.getByRole('button', { name: /sign out/i }))
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /sign out/i }))
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sign out' }),
+    )
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
   })
 })

@@ -77,7 +77,7 @@ describe('navigation structure and permissions', () => {
     const labels = within(nav())
       .getAllByRole('group')
       .map((g) => g.getAttribute('aria-labelledby'))
-    expect(labels).toHaveLength(8)
+    expect(labels).toHaveLength(9)
     for (const section of [
       'Overview',
       'Operations',
@@ -87,6 +87,7 @@ describe('navigation structure and permissions', () => {
       'Property',
       'Management',
       'Administration',
+      'Account',
     ]) {
       expect(within(nav()).getByText(section)).toBeInTheDocument()
     }
@@ -138,7 +139,20 @@ describe('navigation structure and permissions', () => {
     ]) {
       expect(within(nav()).queryByText(hidden)).not.toBeInTheDocument()
     }
-    expect(within(nav()).queryByRole('button', { name: 'Settings' })).not.toBeInTheDocument()
+    // Settings is self-service (every user), but its Owner-only "System status" page is not offered.
+    const settings = within(nav()).getByRole('button', { name: 'Settings' })
+    await userEvent.setup().click(settings)
+    for (const page of [
+      'My Profile',
+      'Account & Security',
+      'Appearance',
+      'Notifications',
+      'Preferences',
+      'About',
+    ]) {
+      expect(within(nav()).getByRole('link', { name: page })).toBeInTheDocument()
+    }
+    expect(within(nav()).queryByRole('link', { name: 'System status' })).not.toBeInTheDocument()
   })
 
   it('a user with no grants sees no navigation entries at all (default deny)', async () => {
@@ -273,7 +287,7 @@ describe('breadcrumbs', () => {
     ])
     expect(buildBreadcrumbs('/system-status/').map((c) => c.label)).toEqual([
       'Dashboard',
-      'Administration',
+      'Account',
       'Settings',
       'System status',
     ])
@@ -395,6 +409,9 @@ describe('header menus', () => {
     const menu = await screen.findByRole('menu')
     expect(within(menu).getByText('Branch User · SATWA')).toBeInTheDocument()
     await user.click(within(menu).getByRole('menuitem', { name: 'Sign out' }))
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sign out' }),
+    )
     expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
   })
 

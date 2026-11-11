@@ -1,3 +1,4 @@
+import json
 import uuid
 from dataclasses import dataclass
 
@@ -56,4 +57,34 @@ class ProfileRepository(BaseRepository):
     def complete_password_change(self) -> None:
         """Clear the caller's own must-change flag (SECURITY DEFINER function; touches only auth.uid()'s row)."""
         self.session.execute(text("select app.complete_password_change()"))
+        self.session.commit()
+
+    def update_own_profile(
+        self, full_name: str, phone: str | None, avatar_path: str | None
+    ) -> None:
+        """Change the caller's own name / phone / photo (SECURITY DEFINER function; only auth.uid()'s row, and
+        never role, branch or active status)."""
+        self.session.execute(
+            text("select app.update_own_profile(:n, :p, :a)"),
+            {"n": full_name, "p": phone, "a": avatar_path},
+        )
+        self.session.commit()
+        self.session.expire_all()
+
+    def get_preferences(self, user_id: uuid.UUID) -> dict[str, object]:
+        row = self.session.execute(
+            text("select preferences from public.user_preferences where user_id = :u"),
+            {"u": user_id},
+        ).first()
+        return dict(row[0]) if row is not None and isinstance(row[0], dict) else {}
+
+    def save_preferences(self, user_id: uuid.UUID, preferences: dict[str, object]) -> None:
+        """Upsert the caller's own row (RLS: user_preferences_*_own)."""
+        self.session.execute(
+            text(
+                "insert into public.user_preferences (user_id, preferences) values (:u, cast(:p as jsonb)) "
+                "on conflict (user_id) do update set preferences = excluded.preferences, updated_at = now()"
+            ),
+            {"u": user_id, "p": json.dumps(preferences)},
+        )
         self.session.commit()

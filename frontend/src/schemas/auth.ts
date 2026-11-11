@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { preferencesSchema } from '@/schemas/preferences'
 
 export const PASSWORD_MIN_LENGTH = 10
 
@@ -47,6 +48,10 @@ export const profileSchema = z.object({
   branch_id: z.string().nullable(),
   branch_name: z.string().nullable(),
   is_active: z.boolean(),
+  phone: z.string().nullable().default(null),
+  /** Key in the private Storage bucket "avatars" (turned into a signed URL in the browser). */
+  avatar_path: z.string().nullable().default(null),
+  preferences: preferencesSchema.default(() => preferencesSchema.parse({})),
   /** True until the user replaces the Owner-issued initial password (server blocks everything else meanwhile). */
   must_change_password: z.boolean().default(false),
   /** Display hints from the server's central permission matrix. The API re-checks every request. */

@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject } from 'react-router-dom'
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
 import { GuestRoute, ProtectedRoute } from '@/auth/guards'
 import { RequirePermission } from '@/auth/permission-guards'
 import { LoadingIndicator } from '@/components/common/loading-indicator'
@@ -31,11 +31,59 @@ import { LicenseDetailPage } from '@/pages/hr/LicenseDetailPage'
 import { TradeLicensesPage } from '@/pages/hr/TradeLicensesPage'
 import { VisasPassportsPage } from '@/pages/hr/VisasPassportsPage'
 import { DailyReportsPage } from '@/pages/reports/DailyReportsPage'
+import { SettingsLayout } from '@/pages/settings/SettingsLayout'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
 import { SetupStatusPage } from '@/pages/SetupStatusPage'
 
 const appChildren: RouteObject[] = [
   { path: 'more', element: <MorePage /> },
+  // Settings: self-service pages for every signed-in user (they only ever act on the caller's own account).
+  {
+    path: 'settings',
+    element: <SettingsLayout />,
+    children: [
+      { index: true, element: <Navigate to="profile" replace /> },
+      {
+        path: 'profile',
+        lazy: async () => ({
+          Component: (await import('@/pages/settings/ProfileSettingsPage')).ProfileSettingsPage,
+        }),
+      },
+      {
+        path: 'security',
+        lazy: async () => ({
+          Component: (await import('@/pages/settings/SecuritySettingsPage')).SecuritySettingsPage,
+        }),
+      },
+      {
+        path: 'appearance',
+        lazy: async () => ({
+          Component: (await import('@/pages/settings/AppearanceSettingsPage'))
+            .AppearanceSettingsPage,
+        }),
+      },
+      {
+        path: 'notifications',
+        lazy: async () => ({
+          Component: (await import('@/pages/settings/NotificationSettingsPage'))
+            .NotificationSettingsPage,
+        }),
+      },
+      {
+        path: 'preferences',
+        lazy: async () => ({
+          Component: (await import('@/pages/settings/PreferenceSettingsPage'))
+            .PreferenceSettingsPage,
+        }),
+      },
+      {
+        path: 'about',
+        lazy: async () => ({
+          Component: (await import('@/pages/settings/AboutSettingsPage')).AboutSettingsPage,
+        }),
+      },
+    ],
+  },
   {
     element: <RequirePermission module="dashboard" action="read" />,
     children: [{ index: true, element: <DashboardPage /> }],

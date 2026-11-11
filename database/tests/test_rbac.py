@@ -346,3 +346,45 @@ class TestFirstLoginPasswordFlag:
         conn.execute("update public.profiles set must_change_password = true where user_id=%s", [w.main])
         with as_user(conn, w.main):
             assert {r[0] for r in conn.execute("select id from public.branches").fetchall()} == {w.branch["ALSAFA MAIN"]}
+
+
+# ------------------------------------------------------------------ migration 0019: settings (own profile, preferences)
+class TestUserSettings:
+    def test_update_own_profile_changes_only_name_phone_photo(self, conn, w):
+        before = q(conn, "select role, branch_id, is_active from public.profiles where user_id=%s", [w.main])
+        with as_user(conn, w.main):
+            conn.execute("select app.update_own_profile('New Name', ' +971 50 123 4567 ', null)")
+        assert q(conn, "select role, branch_id, is_active from public.profiles where user_id=%s", [w.main]) == before
+        assert q(conn, "select full_name, phone from public.profiles where user_id=%s", [w.main]) == [
+            ("New Name", "+971 50 123 4567")]
+
+    def test_update_own_profile_never_touches_other_rows(self, conn, w):
+        other = one(conn, "select full_name from public.profiles where user_id=%s", [w.jernas])
+        with as_user(conn, w.main):
+            conn.execute("select app.update_own_profile('Someone', null, null)")
+        assert one(conn, "select full_name from public.profiles where user_id=%s", [w.jernas]) == other
+
+    def test_update_own_profile_not_callable_by_anon(self, conn, w):
+        with pytest.raises(E.InsufficientPrivilege), as_anon(conn):
+            conn.execute("select app.update_own_profile('x', null, null)")
+
+    def test_avatar_path_must_be_inside_own_folder(self, conn, w):
+        bad = f"{w.jernas}/avatar-{uuid.uuid4()}.png"
+        with pytest.raises(E.CheckViolation), as_user(conn, w.main):
+            conn.execute("select app.update_own_profile('Name', null, %s)", [bad])
+
+    def test_bad_phone_rejected(self, conn, w):
+        with pytest.raises(E.CheckViolation), as_user(conn, w.main):
+            conn.execute("select app.update_own_profile('Name', 'abc', null)")
+
+    def test_preferences_are_private_per_user(self, conn, w):
+        with as_user(conn, w.main):
+            conn.execute("insert into public.user_preferences (user_id, preferences) values (%s, '{\"theme\":\"dark\"}')", [w.main])
+        with as_user(conn, w.jernas):
+            assert conn.execute("select 1 from public.user_preferences").fetchall() == []
+            with pytest.raises(E.InsufficientPrivilege):
+                conn.execute("insert into public.user_preferences (user_id) values (%s)", [w.main])
+
+    def test_preferences_not_visible_to_anon(self, conn, w):
+        with pytest.raises(E.InsufficientPrivilege), as_anon(conn):
+            conn.execute("select * from public.user_preferences")

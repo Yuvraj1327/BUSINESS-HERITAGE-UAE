@@ -1,6 +1,6 @@
 # DESIGN_SYSTEM
 
-Step 6 visual foundation. Light theme only (the approved design has no dark mode, so none was added). Tokens live in `frontend/src/styles/globals.css` as CSS variables exposed to Tailwind v4 through `@theme inline`; components use semantic names (`bg-primary`, `text-muted-foreground`), never raw hex values.
+Step 6 visual foundation. Light theme by default, plus a dark theme chosen in Settings > Appearance (the `.dark` block in `globals.css` overrides the same tokens). Tokens live in `frontend/src/styles/globals.css` as CSS variables exposed to Tailwind v4 through `@theme inline`; components use semantic names (`bg-primary`, `text-muted-foreground`), never raw hex values.
 
 ## Colour tokens
 | Token | Value | Use |

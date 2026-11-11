@@ -54,7 +54,7 @@ Action for client/owner: supply the three missing items into `docs/reference/`.
 | D21 | Savings pool: any withdrawals/use of savings? | Savings are removed from cash but never reduced. |
 | D22 | Task model details: statuses (0/1/2), assignee, whether branch tasks are visible to branch users | PDF: new tasks "Unassigned". |
 | D23 | Audit-log scope and retention; MFA for owner (PDF recommends) | Proposal in SYSTEM_ARCHITECTURE.md. |
-| D24 | Dark theme | Prototype has light and dark; brief says light default. Proposal: light only in v1. |
+| D24 | Dark theme | Prototype has light and dark; brief says light default. Originally light only; superseded: a user-selectable dark theme (Light / Dark / System) was added with the Settings section. |
 | D25 | Notifications | PDF has an on-screen "Needs attention" list only. Email/WhatsApp/push notifications are not specified. Proposal: on-screen only in v1. |
 | D26 | Currency formatting and rounding display | Prototype shows whole AED. |
 

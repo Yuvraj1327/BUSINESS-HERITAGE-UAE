@@ -1,10 +1,13 @@
+import { useState } from 'react'
 import { LogOut } from 'lucide-react'
 import { useAuth } from '@/auth/use-auth'
 import { useNavigation } from '@/auth/use-navigation'
 import { Brand } from '@/components/layout/brand'
 import { SidebarGroup } from '@/components/layout/sidebar-group'
 import { SidebarItem } from '@/components/layout/sidebar-item'
+import { SignOutDialog } from '@/components/layout/sign-out-dialog'
 import { UserAvatar } from '@/components/layout/user-avatar'
+import { useAvatarUrl } from '@/hooks/use-settings'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { roleLabel } from '@/utils/user'
@@ -17,13 +20,15 @@ interface SidebarContentProps {
 
 /** Brand, role-filtered navigation and the signed-in user. Shared by the fixed sidebar and the mobile drawer. */
 export function SidebarContent({ rail, onNavigate }: SidebarContentProps) {
-  const { profile, signOut } = useAuth()
+  const { profile } = useAuth()
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const sections = useNavigation()
+  const avatarUrl = useAvatarUrl(profile?.avatar_path)
 
   const signOutButton = (
     <button
       type="button"
-      onClick={() => void signOut()}
+      onClick={() => setConfirmOpen(true)}
       aria-label="Sign out"
       className={cn(
         'flex min-h-11 items-center gap-3 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-white focus-visible:outline-2 focus-visible:outline-white md:min-h-10',
@@ -37,6 +42,7 @@ export function SidebarContent({ rail, onNavigate }: SidebarContentProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      <SignOutDialog open={confirmOpen} onOpenChange={setConfirmOpen} />
       <div
         className={cn(
           'flex h-14 shrink-0 items-center border-b border-sidebar-border',
@@ -100,7 +106,11 @@ export function SidebarContent({ rail, onNavigate }: SidebarContentProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex justify-center py-1">
-                <UserAvatar name={profile?.full_name} className="bg-white/15 text-white" />
+                <UserAvatar
+                  name={profile?.full_name}
+                  src={avatarUrl}
+                  className="bg-white/15 text-white"
+                />
               </div>
             </TooltipTrigger>
             <TooltipContent side="right">
@@ -109,7 +119,11 @@ export function SidebarContent({ rail, onNavigate }: SidebarContentProps) {
           </Tooltip>
         ) : (
           <div className="flex items-center gap-3 px-3 py-2">
-            <UserAvatar name={profile?.full_name} className="bg-white/15 text-white" />
+            <UserAvatar
+              name={profile?.full_name}
+              src={avatarUrl}
+              className="bg-white/15 text-white"
+            />
             <div className="min-w-0 leading-tight">
               <p className="truncate text-sm font-medium text-white">{profile?.full_name}</p>
               <p className="truncate text-xs text-sidebar-muted">

@@ -7,7 +7,7 @@ export function useNavigation(): NavSection[] {
   const { can, scope } = usePermissions()
   return useMemo(() => {
     const allowed = (item: NavItem) =>
-      can(item.module, item.action) &&
+      (item.selfService === true || can(item.module, item.action)) &&
       (item.requireScope === undefined || scope(item.module) === item.requireScope)
     const visible = (item: NavItem): NavItem | null => {
       if (item.children) {

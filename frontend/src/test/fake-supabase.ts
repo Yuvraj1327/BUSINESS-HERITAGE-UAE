@@ -51,15 +51,31 @@ export function createFakeSupabase() {
       emit('SIGNED_IN', s)
       return { data: { session: s, user: s.user }, error: null }
     }),
-    signOut: vi.fn(async (_o?: { scope: string }) => {
-      emit('SIGNED_OUT', null)
+    signOut: vi.fn(async (o?: { scope: string }) => {
+      if (o?.scope !== 'others') emit('SIGNED_OUT', null) // 'others' keeps this device signed in
       return { error: null }
     }),
     resetPasswordForEmail: vi.fn(async (_e: string, _o?: { redirectTo: string }) => ({
       data: {},
       error: null as unknown,
     })),
-    updateUser: vi.fn(async (_a: { password: string }) => ({ data: {}, error: null as unknown })),
+    updateUser: vi.fn(async (_a: Record<string, unknown>, _o?: Record<string, unknown>) => ({
+      data: {},
+      error: null as unknown,
+    })),
+    signOutOthers: vi.fn(),
   }
-  return { client: { auth }, auth, emit, state }
+  const bucket = {
+    upload: vi.fn(async (_path: string, _file: unknown, _o?: unknown) => ({
+      data: {},
+      error: null as unknown,
+    })),
+    remove: vi.fn(async (_paths: string[]) => ({ data: [], error: null })),
+    createSignedUrl: vi.fn(async (path: string, _s: number) => ({
+      data: { signedUrl: `https://signed.test/${path}` },
+      error: null,
+    })),
+  }
+  const storage = { from: vi.fn((_bucket: string) => bucket) }
+  return { client: { auth, storage }, auth, storage, bucket, emit, state }
 }

@@ -5,7 +5,7 @@
 
 /* ALSAFA design tokens: light theme by default, navy primary, white surfaces, light-grey canvas. */
 /* Colour tokens (see docs/ui/DESIGN_SYSTEM.md). Hex values are the brand palette; the two noted deviations
-   exist only to meet WCAG AA contrast. Light theme only: there is deliberately no dark mode. */
+   exist only to meet WCAG AA contrast. The dark theme (Settings > Appearance) overrides the same tokens in `.dark` below. */
 :root {
   --radius: 0.5rem;
   --background: #f3f7fc; /* page canvas */
@@ -40,6 +40,35 @@
   --sidebar-width: 16rem;
   --sidebar-rail-width: 4rem;
   --header-height: 3.5rem;
+}
+
+/* Dark theme: the same navy identity on deep navy surfaces. Text pairs keep WCAG AA contrast. */
+.dark {
+  --background: #0b1626;
+  --foreground: #e6edf7;
+  --card: #12233a;
+  --card-foreground: #e6edf7;
+  --popover: #12233a;
+  --popover-foreground: #e6edf7;
+  --primary: #7fb2ff; /* light blue: navy would vanish on dark surfaces */
+  --primary-foreground: #0b1626;
+  --secondary: #1b3556;
+  --secondary-foreground: #cfe0fa;
+  --muted: #182c47;
+  --muted-foreground: #9fb2cb;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --teal: #2bc4a6;
+  --teal-strong: #4fd8bd;
+  --destructive: #f87171;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --border: #243a58;
+  --input: #5d7494;
+  --ring: #6aa3f5;
+  --sidebar: #0a1a30;
+  --elev-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elev-pop: 0 8px 24px rgb(0 0 0 / 0.5);
 }
 
 @theme inline {
@@ -103,4 +132,60 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* Dark overrides for the few pale, hard-coded tints used by cards, badges and tiles (light values are unchanged). */
+.dark .bg-white,
+.dark .from-white {
+  --tw-gradient-from: var(--card);
+  background-color: var(--card);
+}
+.dark [class*='to-sky-'],
+.dark [class*='to-violet-'],
+.dark [class*='to-emerald-'],
+.dark [class*='to-teal-'],
+.dark [class*='to-pink-'],
+.dark [class*='to-orange-'],
+.dark [class*='to-indigo-'],
+.dark [class*='to-amber-'] {
+  --tw-gradient-to: var(--secondary);
+}
+.dark .bg-sky-50,
+.dark .bg-sky-100,
+.dark .bg-sky-50\/60,
+.dark .bg-violet-50,
+.dark .bg-violet-100,
+.dark .bg-emerald-50,
+.dark .bg-emerald-100,
+.dark .bg-green-50,
+.dark .bg-green-100,
+.dark .bg-amber-100,
+.dark .bg-orange-100,
+.dark .bg-red-50,
+.dark .bg-red-100,
+.dark .bg-blue-100 {
+  background-color: var(--secondary);
+}
+.dark .border-sky-100,
+.dark .ring-sky-100 {
+  border-color: var(--border);
+  --tw-ring-color: var(--border);
+}
+.dark .text-sky-700,
+.dark .text-sky-800,
+.dark .text-violet-700,
+.dark .text-violet-800,
+.dark .text-emerald-700,
+.dark .text-emerald-800,
+.dark .text-teal-700,
+.dark .text-pink-700,
+.dark .text-indigo-700,
+.dark .text-blue-700,
+.dark .text-blue-800 {
+  color: #bcd6fb;
+}
+.dark .text-orange-700,
+.dark .text-orange-800,
+.dark .text-amber-700 {
+  color: #fcd34d;
 }

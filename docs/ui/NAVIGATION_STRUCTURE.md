@@ -19,9 +19,9 @@ Single definition: `frontend/src/config/navigation.ts` (`NAV_SECTIONS`). The men
 | Property | Rental Agreements | `/rentals` | rentals_cheques / read | placeholder |
 | Management | Tasks | `/tasks` | tasks / read | placeholder |
 | | Reports & Analytics | `/reports` | reports / read | placeholder |
-| Administration | User Management | `/users` | user_management / read | placeholder |
-| | Settings (expandable group) → General | `/settings` | settings / read | placeholder |
-| | Settings → System status | `/system-status` | settings / read | live (Step 3 page) |
+| Administration | User Management | `/users` | user_management / read | live |
+| Account | Settings (expandable group) → My Profile, Account & Security, Appearance, Notifications, Preferences, About | `/settings/*` | every signed-in user (self-service) | live, see `docs/settings/SETTINGS.md` |
+| | Settings → System status | `/system-status` | settings / read (Owner) | live (Step 3 page) |
 
 A "placeholder" page is a protected route that says "This module is not built yet"; it has no data and no actions. `/design-system` exists in development builds only and is not in the menu.
 

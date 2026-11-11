@@ -63,9 +63,9 @@ TEST_PG_ADMIN_DSN="host=localhost user=postgres dbname=postgres" python -m pytes
 ```
 frontend/   React app (src/: components, layouts, pages, routes, hooks, services, lib, schemas, config ...)
 backend/    FastAPI app (app/: api, core, database, models, schemas, repositories, services, middleware ...), alembic/, tests/
-database/   SQL migrations 0001-0018 and database tests
+database/   SQL migrations 0001-0019 and database tests
 e2e/        local end-to-end harness: simulated Supabase Auth server + Playwright (Step 4)
-docs/       architecture/ (Step 1), database/ (Step 2), authentication/ (Step 4), security/ (Step 5), ui/ (Step 6), PROJECT_SETUP.md, ENVIRONMENT_SETUP.md
+docs/       architecture/ (Step 1), database/ (Step 2), authentication/ (Step 4), security/ (Step 5), ui/ (Step 6), settings/ (Settings section), PROJECT_SETUP.md, ENVIRONMENT_SETUP.md
 ```
 More detail: `docs/PROJECT_SETUP.md`. Environment variables and security rules: `docs/ENVIRONMENT_SETUP.md`.
 

@@ -6,3 +6,4 @@ export const BANKS = ['ENBD', 'ADCB'] as const
 export type Bank = (typeof BANKS)[number]
 export const ROLES = ['owner', 'branch'] as const
 export type Role = (typeof ROLES)[number]
+export const APP_DISPLAY_NAME = 'ALSAFA Heritage Laundry ERP'

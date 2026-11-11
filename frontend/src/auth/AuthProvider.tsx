@@ -174,6 +174,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionEnded,
       clearSessionEnded: () => setSessionEnded(false),
       signOut,
+      applyProfile: (profile: UserProfile) =>
+        setProfileResult((prev) =>
+          prev && prev.userId === profile.user_id ? { ...prev, status: 'ready', profile } : prev,
+        ),
       reloadProfile: () => {
         setProfileResult(null)
         setReloadKey((k) => k + 1)

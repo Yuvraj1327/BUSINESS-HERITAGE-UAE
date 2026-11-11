@@ -19,6 +19,12 @@ import {
   Home,
   type LucideIcon,
   Bell,
+  BellRing,
+  Info,
+  Palette,
+  ShieldCheck,
+  SlidersHorizontal,
+  UserRound,
   ShoppingBag,
 } from 'lucide-react'
 import type { AppAction, AppModule } from '@/auth/permissions'
@@ -40,6 +46,11 @@ export interface NavItem {
   /** 'placeholder' = the route exists and is protected, the module itself is built in a later step. */
   status: 'live' | 'placeholder'
   children?: NavItem[]
+  /**
+   * Account pages every signed-in user may open (own profile, security, appearance...). They act only on the
+   * caller's own account, so no module grant applies; `module`/`action` are then only a placeholder.
+   */
+  selfService?: boolean
 }
 
 export interface NavSection {
@@ -47,6 +58,26 @@ export interface NavSection {
   label: string
   items: NavItem[]
 }
+
+/** The Settings pages (shared by the sidebar and the Settings layout's own menu). */
+export const SETTINGS_PAGES: { slug: string; label: string; icon: LucideIcon; blurb: string }[] = [
+  { slug: 'profile', label: 'My Profile', icon: UserRound, blurb: 'Name, photo and phone' },
+  {
+    slug: 'security',
+    label: 'Account & Security',
+    icon: ShieldCheck,
+    blurb: 'Password, email, sessions',
+  },
+  { slug: 'appearance', label: 'Appearance', icon: Palette, blurb: 'Light, dark or system' },
+  { slug: 'notifications', label: 'Notifications', icon: BellRing, blurb: 'In-app alerts' },
+  {
+    slug: 'preferences',
+    label: 'Preferences',
+    icon: SlidersHorizontal,
+    blurb: 'Language, dates, timezone',
+  },
+  { slug: 'about', label: 'About', icon: Info, blurb: 'Version, support, privacy' },
+]
 
 /**
  * The one navigation definition. Visibility = the user holds `action` on `module` (server-sent permissions,
@@ -308,6 +339,12 @@ export const NAV_SECTIONS: NavSection[] = [
         action: 'read',
         status: 'live',
       },
+    ],
+  },
+  {
+    key: 'account',
+    label: 'Account',
+    items: [
       {
         key: 'settings',
         label: 'Settings',
@@ -315,7 +352,18 @@ export const NAV_SECTIONS: NavSection[] = [
         module: 'settings',
         action: 'read',
         status: 'live',
+        selfService: true,
         children: [
+          ...SETTINGS_PAGES.map((p): NavItem => ({
+            key: `settings_${p.slug}`,
+            label: p.label,
+            icon: p.icon,
+            to: `/settings/${p.slug}`,
+            module: 'settings',
+            action: 'read',
+            status: 'live',
+            selfService: true,
+          })),
           {
             key: 'system_status',
             label: 'System status',

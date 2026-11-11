@@ -2,10 +2,12 @@ import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
+import pkg from './package.json' with { type: 'json' }
 
 // Only variables prefixed with VITE_ reach the browser bundle. Never put secrets (service-role key, DB URL) in them.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } },
   server: { port: 5173, strictPort: true },
   preview: { port: 4173, strictPort: true },

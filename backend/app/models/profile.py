@@ -23,5 +23,9 @@ class Profile(Base):
     must_change_password: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default="false"
     )
+    # Self-editable (migration 0019, written only through app.update_own_profile()). avatar_path is a key in the
+    # private Storage bucket "avatars", never a URL.
+    phone: Mapped[str | None] = mapped_column(Text)
+    avatar_path: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
