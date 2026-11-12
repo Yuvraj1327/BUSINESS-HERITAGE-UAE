@@ -148,7 +148,8 @@ class Alert(BaseModel):
 
 
 class OwnerDashboard(BaseModel):
-    mode: Literal["day", "month"]
+    mode: Literal["day", "month", "range"]
+    preset: str | None = None  # the quick range that was resolved (range mode), else None
     date_from: date
     date_to: date
     today: date
@@ -158,4 +159,4 @@ class OwnerDashboard(BaseModel):
     alerts: list[Alert]
     branches: list[BranchRow]
     unallocated_head_office_excl_savings: Money
-    days: list[DayRow] | None  # month mode only
+    days: list[DayRow] | None  # month mode and multi-day ranges

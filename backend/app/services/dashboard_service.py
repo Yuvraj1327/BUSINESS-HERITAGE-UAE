@@ -36,6 +36,31 @@ from app.services.report_service import report_out
 from app.utils.time import dubai_today
 
 MAX_RANGE_DAYS = 92  # BUSINESS_LOGIC §11
+MAX_DASHBOARD_RANGE_DAYS = (
+    366  # owner dashboard aggregates in SQL, so a longer custom range is fine
+)
+
+DatePreset = Literal["today", "yesterday", "last7", "last30", "this_month", "last_month"]
+
+
+def preset_bounds(preset: DatePreset, today: date) -> tuple[date, date]:
+    """Inclusive Dubai-date range for a quick filter (``today`` is the Dubai business date)."""
+    first_this = today.replace(day=1)
+    match preset:
+        case "today":
+            return today, today
+        case "yesterday":
+            y = today - timedelta(days=1)
+            return y, y
+        case "last7":
+            return today - timedelta(days=6), today
+        case "last30":
+            return today - timedelta(days=29), today
+        case "this_month":
+            return first_this, today
+        case "last_month":
+            last_prev = first_this - timedelta(days=1)
+            return last_prev.replace(day=1), last_prev
 
 
 def _totals(sums: dict[str, Any]) -> Totals:
@@ -216,7 +241,7 @@ class DashboardService(BaseService):
         return _ho(total, savings, count), rows, unalloc
 
     @staticmethod
-    def _check_range(d_from: date, d_to: date, today: date) -> None:
+    def _check_range(d_from: date, d_to: date, today: date, max_days: int = MAX_RANGE_DAYS) -> None:
         if d_from > d_to:
             raise UnprocessableError(
                 "Start date is after end date",
@@ -227,22 +252,37 @@ class DashboardService(BaseService):
                 "End date cannot be in the future",
                 fields={"date_to": ["End date cannot be after today (Dubai)"]},
             )
-        if (d_to - d_from).days + 1 > MAX_RANGE_DAYS:
+        if (d_to - d_from).days + 1 > max_days:
             raise UnprocessableError(
-                f"Choose at most {MAX_RANGE_DAYS} days",
-                fields={"date_from": [f"Choose at most {MAX_RANGE_DAYS} days"]},
+                f"Choose at most {max_days} days",
+                fields={"date_from": [f"Choose at most {max_days} days"]},
             )
 
     # ---- Owner dashboard ---------------------------------------------------------------------------------
     def owner_dashboard(
         self,
-        mode: Literal["day", "month"],
+        mode: Literal["day", "month", "range"],
         day: date | None,
         month: str | None,
         today: date | None = None,
+        *,
+        preset: DatePreset | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
     ) -> OwnerDashboard:
         today = today or dubai_today()
-        if mode == "day":
+        if mode == "range":
+            if preset is not None:
+                d_from, d_to = preset_bounds(preset, today)
+            elif date_from is not None and date_to is not None:
+                d_from, d_to = date_from, date_to
+                self._check_range(d_from, d_to, today, MAX_DASHBOARD_RANGE_DAYS)
+            else:
+                raise UnprocessableError(
+                    "Choose a quick range or both dates",
+                    fields={"date_from": ["Provide date_from and date_to, or a preset"]},
+                )
+        elif mode == "day":
             d_from = d_to = day or today
             if d_from > today:
                 raise UnprocessableError(
@@ -281,6 +321,7 @@ class DashboardService(BaseService):
         )
         return OwnerDashboard(
             mode=mode,
+            preset=preset if mode == "range" else None,
             date_from=d_from,
             date_to=d_to,
             today=today,
@@ -293,7 +334,9 @@ class DashboardService(BaseService):
                 money(ho_by_branch.get(None, {}).get("total", ZERO)),
                 money(ho_by_branch.get(None, {}).get("savings", ZERO)),
             ),
-            days=self._days(d_from, d_to, today, missing) if mode == "month" else None,
+            days=self._days(d_from, d_to, today, missing)
+            if mode == "month" or d_from != d_to
+            else None,
         )
 
     def _balances(self, as_of: date) -> BalanceSummary:

@@ -413,6 +413,49 @@ describe('Owner dashboard', () => {
     )
   })
 
+  it('quick ranges and custom range are sent to the API; reset returns to today', async () => {
+    const calls = api(PROFILE_OWNER)
+    renderApp('/')
+    const user = userEvent.setup()
+    await screen.findByTestId('kpis')
+    const last = () =>
+      calls.filter((c) => c.url === '/dashboard/owner').at(-1)?.params as Record<string, string>
+    const today = dubaiToday()
+    for (const [label, preset] of [
+      ['Yesterday', 'yesterday'],
+      ['Last 7 Days', 'last7'],
+      ['Last 30 Days', 'last30'],
+      ['This Month', 'this_month'],
+      ['Last Month', 'last_month'],
+      ['Today', 'today'],
+    ] as const) {
+      await user.click(screen.getByRole('button', { name: label }))
+      await waitFor(() => expect(last()).toEqual({ mode: 'range', preset }))
+    }
+    await user.click(screen.getByRole('button', { name: /Custom Range/ }))
+    const from = await screen.findByLabelText('From date')
+    const to = screen.getByLabelText('To date')
+    await user.clear(from)
+    await user.type(from, '2026-11-01')
+    await user.clear(to)
+    await user.type(to, '2026-11-05')
+    await waitFor(() =>
+      expect(last()).toEqual({ mode: 'range', date_from: '2026-11-01', date_to: '2026-11-05' }),
+    )
+    await user.click(screen.getByRole('button', { name: /Reset Filters/ }))
+    await waitFor(() => expect(last()).toMatchObject({ mode: 'day', date: today }))
+    expect(screen.queryByLabelText('From date')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Reset Filters/ })).toBeDisabled()
+  })
+
+  it('custom range with start after end shows an error and does not call the API', async () => {
+    const calls = api(PROFILE_OWNER)
+    renderApp('/?view=range&from=2026-11-05&to=2026-11-01')
+    await screen.findByRole('alert')
+    expect(screen.getByRole('alert')).toHaveTextContent(/must not be after/i)
+    expect(calls.filter((c) => c.url === '/dashboard/owner')).toHaveLength(0)
+  })
+
   it('Next is disabled on today (no future dates)', async () => {
     api(PROFILE_OWNER)
     renderApp('/')

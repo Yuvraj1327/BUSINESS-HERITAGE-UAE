@@ -11,6 +11,8 @@ import {
   ShoppingBag,
   Wallet,
   Building2,
+  CalendarRange,
+  RotateCcw,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { DataTable } from '@/components/common/data-table'
@@ -25,6 +27,7 @@ import { Button } from '@/components/ui/button'
 import { FormDatePicker } from '@/components/forms/form-date-picker'
 import { useAlertSummary } from '@/hooks/use-alerts'
 import { useOwnerDashboard } from '@/hooks/use-reports'
+import type { DashboardPreset } from '@/services/dashboard.service'
 import { SeverityBadge } from '@/pages/alerts/shared'
 import type { OwnerDashboard as OwnerDashboardData } from '@/schemas/dashboard'
 import { addDays, addMonths, formatMonth, monthOf } from '@/utils/period'
@@ -126,25 +129,79 @@ function BalanceCards({ b, loading }: { b?: OwnerDashboardData['balances']; load
   )
 }
 
+const PRESETS: { key: DashboardPreset; label: string }[] = [
+  { key: 'today', label: 'Today' },
+  { key: 'yesterday', label: 'Yesterday' },
+  { key: 'last7', label: 'Last 7 Days' },
+  { key: 'last30', label: 'Last 30 Days' },
+  { key: 'this_month', label: 'This Month' },
+  { key: 'last_month', label: 'Last Month' },
+]
+const MAX_RANGE_DAYS = 366 // keep in step with the API
+const ISO = /^\d{4}-\d{2}-\d{2}$/
+
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000)
+}
+
 export function OwnerDashboard() {
   const [params, setParams] = useSearchParams()
   const today = dubaiToday()
-  const mode = params.get('view') === 'month' ? 'month' : 'day'
+  const view = params.get('view')
+  const mode: 'day' | 'month' | 'range' =
+    view === 'month' ? 'month' : view === 'range' ? 'range' : 'day'
   const rawDate = params.get('date')
-  const date = rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate) && rawDate <= today ? rawDate : today
+  const date = rawDate && ISO.test(rawDate) && rawDate <= today ? rawDate : today
   const rawMonth = params.get('month')
   const month =
     rawMonth && /^\d{4}-\d{2}$/.test(rawMonth) && rawMonth <= monthOf(today)
       ? rawMonth
       : monthOf(today)
+  const rawPreset = params.get('preset')
+  const preset = PRESETS.find((p) => p.key === rawPreset)?.key ?? null // null = custom range
+  const rawFrom = params.get('from') ?? ''
+  const rawTo = params.get('to') ?? ''
+  const from = ISO.test(rawFrom) ? rawFrom : ''
+  const to = ISO.test(rawTo) ? rawTo : ''
 
-  const set = (next: Record<string, string>) =>
-    setParams({ view: mode, date, month, ...next }, { replace: true })
-  const q = useOwnerDashboard(mode === 'day' ? { mode, date } : { mode, month })
+  // Custom range validation (the API enforces the same rules).
+  let rangeError: string | null = null
+  if (mode === 'range' && !preset) {
+    if (from && to && from > to) rangeError = 'Start date must not be after the end date.'
+    else if ((from && from > today) || (to && to > today))
+      rangeError = 'Dates cannot be in the future (Dubai time).'
+    else if (from && to && daysBetween(from, to) + 1 > MAX_RANGE_DAYS)
+      rangeError = `Choose at most ${MAX_RANGE_DAYS} days.`
+  }
+  const customReady = mode === 'range' && !preset && !!from && !!to && !rangeError
+
+  const set = (next: Record<string, string>) => {
+    const merged: Record<string, string> = { view: mode, date, month, ...next }
+    if (merged.view === 'range') {
+      merged.from ??= from
+      merged.to ??= to
+    }
+    for (const k of Object.keys(merged)) if (!merged[k]) delete merged[k]
+    setParams(merged, { replace: true })
+  }
+  const q = useOwnerDashboard(
+    mode === 'day'
+      ? { mode, date }
+      : mode === 'month'
+        ? { mode, month }
+        : preset
+          ? { mode, preset }
+          : { mode, date_from: from, date_to: to },
+    mode !== 'range' || !!preset || customReady,
+  )
   const d = q.data
   const k = d?.kpis
   const loading = q.isLoading
   const maxSales = Math.max(1, ...(d?.branches.map((b) => Number(b.total_sales)) ?? [0]))
+  const isDefault = mode === 'day' && date === today
+
+  const pickCustom = () =>
+    set({ view: 'range', preset: '', from: d?.date_from ?? today, to: d?.date_to ?? today })
 
   const period =
     mode === 'day' ? (
@@ -171,15 +228,8 @@ export function OwnerDashboard() {
         >
           Next <ChevronRight aria-hidden />
         </Button>
-        <Button
-          variant="secondary"
-          className="h-11 flex-1 sm:h-9 sm:flex-none"
-          onClick={() => set({ date: today })}
-        >
-          Today
-        </Button>
       </div>
-    ) : (
+    ) : mode === 'month' ? (
       <div className="grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
         <Button
           variant="outline"
@@ -202,14 +252,17 @@ export function OwnerDashboard() {
         >
           Next Month <ChevronRight aria-hidden />
         </Button>
-        <Button
-          variant="secondary"
-          className="col-span-2 h-11 sm:col-span-1 sm:h-9"
-          onClick={() => set({ month: monthOf(today) })}
-        >
-          This Month
-        </Button>
       </div>
+    ) : (
+      <p className="text-sm font-medium" aria-live="polite" data-testid="range-summary">
+        {d
+          ? d.date_from === d.date_to
+            ? formatDate(d.date_from)
+            : `${formatDate(d.date_from)} – ${formatDate(d.date_to)}`
+          : preset
+            ? ''
+            : 'Pick a start and end date'}
+      </p>
     )
 
   return (
@@ -241,6 +294,64 @@ export function OwnerDashboard() {
           </div>
           {period}
         </div>
+        <div
+          className="mt-4 flex flex-wrap items-center gap-2"
+          role="group"
+          aria-label="Quick date ranges"
+        >
+          {PRESETS.map((p) => (
+            <Button
+              key={p.key}
+              size="sm"
+              className="h-10 sm:h-8"
+              variant={mode === 'range' && preset === p.key ? 'default' : 'outline'}
+              aria-pressed={mode === 'range' && preset === p.key}
+              onClick={() => set({ view: 'range', preset: p.key, from: '', to: '' })}
+            >
+              {p.label}
+            </Button>
+          ))}
+          <Button
+            size="sm"
+            className="h-10 sm:h-8"
+            variant={mode === 'range' && !preset ? 'default' : 'outline'}
+            aria-pressed={mode === 'range' && !preset}
+            onClick={pickCustom}
+          >
+            <CalendarRange aria-hidden /> Custom Range
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-10 sm:h-8"
+            disabled={isDefault}
+            onClick={() => setParams({}, { replace: true })}
+          >
+            <RotateCcw aria-hidden /> Reset Filters
+          </Button>
+        </div>
+        {mode === 'range' && !preset ? (
+          <div className="mt-4 grid gap-3 sm:max-w-xl sm:grid-cols-2">
+            <FormDatePicker
+              label="From date"
+              value={from}
+              max={to && to <= today ? to : today}
+              onChange={(e) => set({ from: e.target.value })}
+            />
+            <FormDatePicker
+              label="To date"
+              value={to}
+              min={from || undefined}
+              max={today}
+              onChange={(e) => set({ to: e.target.value })}
+            />
+            {rangeError ? (
+              <p className="text-sm text-destructive sm:col-span-2" role="alert">
+                {rangeError}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         <p className="mt-3 text-xs text-muted-foreground">
           The dashboard always covers all branches. Use Branch &amp; Date View for a single branch.
         </p>

@@ -137,7 +137,8 @@ export const dayRowSchema = z.object({
 })
 
 export const ownerDashboardSchema = z.object({
-  mode: z.enum(['day', 'month']),
+  mode: z.enum(['day', 'month', 'range']),
+  preset: z.string().nullable().optional(),
   date_from: date,
   date_to: date,
   today: date,
